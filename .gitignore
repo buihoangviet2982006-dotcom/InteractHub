@@ -1,0 +1,16 @@
+# --- Backend (ASP.NET Core) ---
+Backend/**/bin/
+Backend/**/obj/
+Backend/**/appsettings.Development.json # Không đẩy cấu hình bảo mật/DB nội bộ lên mạng
+
+# --- Frontend (React) ---
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.env
+
+# --- OS và IDE ---
+.vscode/
+.idea/
+*.suo
+*.user
+.DS_Store
