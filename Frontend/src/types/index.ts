@@ -23,4 +23,5 @@ export interface Post {
   likes: number;
   comments: Comment[];
   shares: number;
+  isLiked?: boolean;
 }

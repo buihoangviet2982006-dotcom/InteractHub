@@ -6,7 +6,7 @@ export function RightSidebar() {
       
       {/* Friends Online */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <h3 className="text-gray-900 font-semibold mb-3">Friends Online</h3>
+        <h3 className="text-gray-900 font-semibold mb-3">Bạn bè đang trực tuyến</h3>
         <ul className="space-y-3">
           {friendsOnline.map((friend, index) => (
             <li key={friend.id + index} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-1 -mx-1 rounded-md transition-colors">
@@ -24,7 +24,7 @@ export function RightSidebar() {
 
       {/* Suggestions */}
       <div className="bg-white rounded-lg shadow-sm p-4">
-        <h3 className="text-gray-900 font-semibold mb-3">Suggestions</h3>
+        <h3 className="text-gray-900 font-semibold mb-3">Gợi ý</h3>
         <ul className="space-y-4">
           {suggestions.map((suggestion) => (
             <li key={suggestion.id} className="flex items-center justify-between">
@@ -33,7 +33,7 @@ export function RightSidebar() {
                 <span className="font-medium text-gray-700 text-sm">{suggestion.name}</span>
               </div>
               <button className="text-sm text-blue-600 font-medium border border-blue-600 rounded-md px-2 py-1 hover:bg-blue-50 transition-colors">
-                Add Friend
+                Kết bạn
               </button>
             </li>
           ))}

@@ -1,7 +1,14 @@
 import { Search, Bell, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { currentUser } from '../../data/mockData';
+import { usePosts } from '../../contexts/PostContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function Navbar() {
+  const { search, setSearch } = usePosts();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <nav className="bg-[#1877f2] h-14 flex items-center justify-between px-4 sticky top-0 z-50">
       {/* Logo */}
@@ -20,8 +27,10 @@ export function Navbar() {
           </div>
           <input
             type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="block w-full pl-9 pr-3 py-1.5 border border-transparent rounded-full leading-5 bg-[#f0f2f5] placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-300 sm:text-sm transition-all"
-            placeholder="Search on InteractHub"
+            placeholder="Tìm bài viết..."
           />
         </div>
       </div>
@@ -39,7 +48,17 @@ export function Navbar() {
             className="h-9 w-9 rounded-full object-cover border-2 border-transparent hover:border-white transition-colors"
             src={currentUser.avatarUrl}
             alt={currentUser.name}
+            loading="lazy"
           />
+        </button>
+        <button
+          className="text-xs text-white border border-white/40 rounded-md px-2 py-1 hover:bg-white/10"
+          onClick={() => {
+            logout();
+            navigate('/login');
+          }}
+        >
+          Đăng xuất
         </button>
       </div>
     </nav>

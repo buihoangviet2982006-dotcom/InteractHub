@@ -1,4 +1,5 @@
 import { Users, MessageSquare, Settings } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { currentUser } from '../../data/mockData';
 
 export function LeftSidebar() {
@@ -13,21 +14,21 @@ export function LeftSidebar() {
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-3 p-3 rounded-md bg-blue-50 text-blue-600 font-medium">
+            <NavLink to="/" className="flex items-center space-x-3 p-3 rounded-md bg-blue-50 text-blue-600 font-medium">
               <Users className="w-6 h-6" />
-              <span>Friends</span>
-            </a>
+              <span>Bảng tin</span>
+            </NavLink>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium">
+            <NavLink to="/hashtags" className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium">
               <MessageSquare className="w-6 h-6" />
-              <span>Messages</span>
-            </a>
+              <span>Thẻ hashtag</span>
+            </NavLink>
           </li>
           <li>
             <a href="#" className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium">
               <Settings className="w-6 h-6" />
-              <span>Settings</span>
+              <span>Cài đặt</span>
             </a>
           </li>
         </ul>
