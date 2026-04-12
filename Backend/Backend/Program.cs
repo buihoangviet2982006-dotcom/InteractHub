@@ -9,8 +9,23 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddControllers();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Register Repositories
+builder.Services.AddScoped(typeof(Backend.Repositories.IRepository<>), typeof(Backend.Repositories.Repository<>));
+builder.Services.AddScoped<Backend.Repositories.IUserRepository, Backend.Repositories.UserRepository>();
+builder.Services.AddScoped<Backend.Repositories.IPostRepository, Backend.Repositories.PostRepository>();
+builder.Services.AddScoped<Backend.Repositories.ICommentRepository, Backend.Repositories.CommentRepository>();
+builder.Services.AddScoped<Backend.Repositories.ILikeRepository, Backend.Repositories.LikeRepository>();
+builder.Services.AddScoped<Backend.Repositories.IHashtagRepository, Backend.Repositories.HashtagRepository>();
+
+// Register Services
+builder.Services.AddScoped<Backend.Services.IPostService, Backend.Services.PostService>();
+builder.Services.AddScoped<Backend.Services.ICommentService, Backend.Services.CommentService>();
+builder.Services.AddScoped<Backend.Services.ILikeService, Backend.Services.LikeService>();
+builder.Services.AddScoped<Backend.Services.IHashtagService, Backend.Services.HashtagService>();
+
+// Cấu hình Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -19,7 +34,11 @@ app.MapControllers();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "InteractHub API v1");
+    });
 }
 
 app.UseHttpsRedirection();

@@ -3,7 +3,7 @@ using System;
 namespace Backend.Models;
 public class Like : Entity
 {
-    public int Id { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public int PostId { get; set; }

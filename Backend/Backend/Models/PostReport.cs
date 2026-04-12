@@ -3,7 +3,7 @@ using System;
 namespace Backend.Models;
 public class PostReport : Entity
 {
-    public int Id { get; set; }
+
     public string? Reason { get; set; } 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

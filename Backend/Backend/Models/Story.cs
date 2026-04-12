@@ -3,7 +3,7 @@ using System;
 namespace Backend.Models;
 public class Story : Entity
 {
-    public int Id { get; set; }
+
     public string? MediaUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddHours(24);

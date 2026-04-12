@@ -1,5 +1,5 @@
 namespace Backend.Models;
-public interface Entity
+public abstract class Entity
 {
     public int Id { get; set; }
 }

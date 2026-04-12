@@ -3,7 +3,7 @@ using System;
 namespace Backend.Models;
 public class Friendship : Entity
 {
-    public int Id { get; set; }
+
     public int RequestorId { get; set; } 
     public virtual User? Requestor { get; set; }
 
