@@ -1,7 +1,9 @@
 # --- Backend (ASP.NET Core) ---
-Backend/**/bin/
-Backend/**/obj/
-Backend/**/appsettings.Development.json # Không đẩy cấu hình bảo mật/DB nội bộ lên mạng
+**/bin/
+**/obj/
+# Không đẩy cấu hình bảo mật/DB nội bộ lên mạng
+**/appsettings.Development.json
+**/appsettings.Local.json
 
 # --- Frontend (React) ---
 Frontend/node_modules/
