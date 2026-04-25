@@ -16,6 +16,12 @@ const LoginPage = lazy(() =>
   })),
 );
 
+const RegisterPage = lazy(() =>
+  import('./pages/RegisterPage').then((module) => ({
+    default: module.RegisterPage,
+  })),
+);
+
 const HashtagPage = lazy(() =>
   import('./pages/HashtagPage').then((module) => ({
     default: module.HashtagPage,
@@ -27,6 +33,7 @@ function App() {
     <Suspense fallback={<div className="p-6 text-gray-600">Đang tải trang...</div>}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route path="/" element={<FeedPage />} />
