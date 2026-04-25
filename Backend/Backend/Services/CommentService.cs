@@ -7,7 +7,7 @@ namespace Backend.Services;
 public interface ICommentService
 {
     Task<List<CommentResponseDto>> GetCommentsByPostAsync(int postId);
-    Task<CommentResponseDto> CreateCommentAsync(CommentCreateDto dto);
+    Task<CommentResponseDto> CreateCommentAsync(int userId, CommentCreateDto dto);
     Task<bool> DeleteCommentAsync(int id, int userId);
 }
 
@@ -16,12 +16,14 @@ public class CommentService : ICommentService
     private readonly ICommentRepository _commentRepo;
     private readonly IPostRepository _postRepo;
     private readonly IUserRepository _userRepo;
+    private readonly INotificationService _notificationService;
 
-    public CommentService(ICommentRepository commentRepo, IPostRepository postRepo, IUserRepository userRepo)
+    public CommentService(ICommentRepository commentRepo, IPostRepository postRepo, IUserRepository userRepo, INotificationService notificationService)
     {
         _commentRepo = commentRepo;
         _postRepo = postRepo;
         _userRepo = userRepo;
+        _notificationService = notificationService;
     }
 
     public async Task<List<CommentResponseDto>> GetCommentsByPostAsync(int postId)
@@ -39,7 +41,7 @@ public class CommentService : ICommentService
         }).ToList();
     }
 
-    public async Task<CommentResponseDto> CreateCommentAsync(CommentCreateDto dto)
+    public async Task<CommentResponseDto> CreateCommentAsync(int userId, CommentCreateDto dto)
     {
         var post = await _postRepo.GetByIdAsync(dto.PostId);
         if (post == null) throw new Exception("Bài viết không tồn tại.");
@@ -47,7 +49,7 @@ public class CommentService : ICommentService
         var comment = new Comment
         {
             PostId = dto.PostId,
-            UserId = dto.UserId,
+            UserId = userId,
             Content = dto.Content,
             CreatedAt = DateTime.UtcNow
         };
@@ -55,7 +57,12 @@ public class CommentService : ICommentService
         await _commentRepo.AddAsync(comment);
         await _commentRepo.SaveChangesAsync();
 
-        var user = await _userRepo.GetByIdAsync(dto.UserId);
+        var user = await _userRepo.GetByIdAsync(userId);
+
+        if (post.UserId != userId)
+        {
+            await _notificationService.SendNotificationAsync(post.UserId, "Comment", $"{user?.FullName ?? "Một người dùng"} đã bình luận về bài viết của bạn.");
+        }
 
         return new CommentResponseDto
         {

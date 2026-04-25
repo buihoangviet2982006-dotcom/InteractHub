@@ -4,9 +4,7 @@ namespace Backend.DTOs;
 
 public class PostCreateDto
 {
-    [Required]
-    public int UserId { get; set; } // Tạm thời dùng UserId nhập tay cho đến khi có JWT
-    
+
     [Required]
     [MaxLength(2000)]
     public string Content { get; set; } = string.Empty;

@@ -1,9 +1,12 @@
 using Backend.DTOs;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend.Controllers;
 
+[Authorize]
 [Route("api/posts/{postId}/[controller]")]
 [ApiController]
 public class CommentsController : ControllerBase
@@ -25,10 +28,14 @@ public class CommentsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateComment(int postId, [FromBody] CommentCreateDto dto)
     {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
         try
         {
             if (postId != dto.PostId) return BadRequest("PostId không khớp.");
-            var result = await _commentService.CreateCommentAsync(dto);
+            var result = await _commentService.CreateCommentAsync(userId, dto);
             return Ok(result);
         }
         catch (Exception ex)
@@ -38,8 +45,12 @@ public class CommentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteComment(int postId, int id, [FromQuery] int userId) // userId từ query tạm
+    public async Task<IActionResult> DeleteComment(int postId, int id)
     {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
         var success = await _commentService.DeleteCommentAsync(id, userId);
         if (!success) return BadRequest("Không thể xóa bình luận.");
         return NoContent();

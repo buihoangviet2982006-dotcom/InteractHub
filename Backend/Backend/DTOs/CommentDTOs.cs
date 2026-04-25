@@ -7,9 +7,7 @@ public class CommentCreateDto
     [Required]
     public int PostId { get; set; }
     
-    [Required]
-    public int UserId { get; set; }
-    
+
     [Required]
     [MaxLength(1000)]
     public string Content { get; set; } = string.Empty;

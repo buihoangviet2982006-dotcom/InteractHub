@@ -9,7 +9,7 @@ public interface IPostService
 {
     Task<CursorPagedResult<PostResponseDto>> GetPostsAsync(CursorPaginationDto pagination);
     Task<PostResponseDto?> GetPostByIdAsync(int id);
-    Task<PostResponseDto> CreatePostAsync(PostCreateDto dto);
+    Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto);
     Task<bool> DeletePostAsync(int id, int userId);
 }
 
@@ -78,11 +78,11 @@ public class PostService : IPostService
         };
     }
 
-    public async Task<PostResponseDto> CreatePostAsync(PostCreateDto dto)
+    public async Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto)
     {
         var post = new Post
         {
-            UserId = dto.UserId,
+            UserId = userId,
             Content = dto.Content,
             ImageUrl = dto.ImageUrl,
             CreatedAt = DateTime.UtcNow

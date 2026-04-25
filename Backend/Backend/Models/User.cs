@@ -8,6 +8,7 @@ public class User : Entity
     public string? FullName { get; set; }
     public string? AvatarUrl { get; set; }
     public string? Bio { get; set; }
+    public string Role { get; set; } = "User";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // --- Quan hệ với các bảng khác (Navigation Properties) ---

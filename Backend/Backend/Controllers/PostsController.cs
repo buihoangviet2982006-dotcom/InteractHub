@@ -1,9 +1,12 @@
 using Backend.DTOs;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class PostsController : ControllerBase
@@ -33,9 +36,12 @@ public class PostsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreatePost([FromBody] PostCreateDto dto)
     {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
         try
         {
-            var result = await _postService.CreatePostAsync(dto);
+            var result = await _postService.CreatePostAsync(userId, dto);
             return CreatedAtAction(nameof(GetPostById), new { id = result.Id }, result);
         }
         catch (Exception ex)
@@ -45,8 +51,12 @@ public class PostsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeletePost(int id, [FromQuery] int userId) // Lấy userId từ query tạm thời để test
+    public async Task<IActionResult> DeletePost(int id)
     {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
         var success = await _postService.DeletePostAsync(id, userId);
         if (!success) return BadRequest("Không thể xóa bài viết. Có thể bạn không có quyền hoặc bài viết không tồn tại.");
         
