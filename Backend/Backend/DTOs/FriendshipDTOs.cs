@@ -1,0 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Backend.DTOs;
+
+public class FriendshipCreateDto
+{
+
+    [Required]
+    public int ReceiverId { get; set; }
+}
+
+public class FriendshipResponseDto
+{
+    public int FriendId { get; set; }
+    public string FriendName { get; set; } = string.Empty;
+    public string? FriendAvatarUrl { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
