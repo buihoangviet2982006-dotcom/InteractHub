@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace Backend.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class PostReportsController : ControllerBase
@@ -18,6 +18,7 @@ public class PostReportsController : ControllerBase
         _reportService = reportService;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetReports([FromQuery] CursorPaginationDto pagination)
     {
