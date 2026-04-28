@@ -12,7 +12,7 @@ interface PostContextValue {
   search: string;
   hasNextPage: boolean;
   setSearch: (value: string) => void;
-  addPost: (content: string) => Promise<void>;
+  addPost: (content: string, imageUrl?: string) => Promise<void>;
   loadMore: () => Promise<void>;
   toggleLike: (postId: string) => Promise<void>;
   addComment: (postId: string, content: string) => Promise<void>;
@@ -76,8 +76,8 @@ export function PostProvider({ children }: { children: ReactNode }) {
       search,
       hasNextPage,
       setSearch,
-      addPost: async (content: string) => {
-        const optimisticPost = await createPost(content);
+      addPost: async (content: string, imageUrl?: string) => {
+        const optimisticPost = await createPost(content, imageUrl);
         setPosts((prev) => [optimisticPost, ...prev.filter((p) => p.id !== optimisticPost.id)]);
       },
       loadMore: async () => {

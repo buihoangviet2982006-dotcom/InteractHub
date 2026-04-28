@@ -7,9 +7,21 @@ import { useAuth } from '../../contexts/AuthContext';
 export function CreatePost() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [postText, setPostText] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [showImageInput, setShowImageInput] = useState(false);
   const { addPost } = usePosts();
   const { user } = useAuth();
   const displayUser = user || currentUser;
+  
+  const handlePost = async () => {
+    const value = postText.trim();
+    if (!value) return;
+    await addPost(value, imageUrl.trim() || undefined);
+    setPostText('');
+    setImageUrl('');
+    setShowImageInput(false);
+    setIsModalOpen(false);
+  };
 
   return (
     <>
@@ -28,7 +40,10 @@ export function CreatePost() {
         <div className="border-t pt-3 flex items-center px-2">
           <button 
             className="flex items-center space-x-2 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors flex-1 sm:flex-none justify-center"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setIsModalOpen(true);
+              setShowImageInput(true);
+            }}
           >
             <Image className="w-6 h-6 text-green-500" />
             <span className="text-gray-600 font-medium text-sm">Ảnh/video</span>
@@ -64,18 +79,45 @@ export function CreatePost() {
               </div>
 
               <textarea
-                className="w-full text-xl sm:text-2xl placeholder-gray-500 outline-none resize-none flex-1 min-h-[150px]"
+                className="w-full text-xl sm:text-2xl placeholder-gray-500 outline-none resize-none flex-1 min-h-[120px]"
                 placeholder={`Bạn đang nghĩ gì, ${displayUser.fullName || displayUser.name}?`}
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
                 autoFocus
               />
 
+              {showImageInput && (
+                <div className="mb-4 animate-in slide-in-from-top-2 duration-200">
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50/30 text-sm"
+                    placeholder="Dán link ảnh vào đây (ví dụ: https://...)"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    autoFocus={!postText}
+                  />
+                  {imageUrl && (
+                    <div className="mt-2 relative group">
+                      <img src={imageUrl} alt="Preview" className="max-h-40 w-full object-cover rounded-lg border shadow-sm" />
+                      <button 
+                        onClick={() => setImageUrl('')}
+                        className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-auto">
                 {/* Add to your post */}
                 <div className="border border-gray-300 rounded-lg p-3 flex items-center justify-between shadow-sm mb-4 mt-2">
                   <span className="font-semibold text-gray-900">Thêm vào bài viết</span>
-                  <button className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+                  <button 
+                    onClick={() => setShowImageInput(!showImageInput)}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${showImageInput ? 'bg-green-100' : 'hover:bg-gray-100'}`}
+                  >
                     <Image className="w-6 h-6 text-green-500" />
                   </button>
                 </div>
@@ -88,13 +130,7 @@ export function CreatePost() {
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                   disabled={postText.trim().length === 0}
-                  onClick={async () => {
-                    const value = postText.trim();
-                    if (!value) return;
-                    await addPost(value);
-                    setPostText('');
-                    setIsModalOpen(false);
-                  }}
+                  onClick={handlePost}
                 >
                   Đăng bài
                 </button>

@@ -103,9 +103,9 @@ export async function createComment(postId: string, content: string): Promise<Co
   }
 }
 
-export async function createPost(content: string): Promise<Post> {
+export async function createPost(content: string, imageUrl?: string): Promise<Post> {
   try {
-    const response = await http.post<any>('/posts', { content });
+    const response = await http.post<any>('/posts', { content, imageUrl });
     return mapBackendPostToFrontend(response.data);
   } catch (error) {
     console.error('Lỗi khi tạo bài viết:', error);
@@ -115,6 +115,7 @@ export async function createPost(content: string): Promise<Post> {
       userId: currentUser.id,
       user: currentUser,
       content,
+      imageUrl,
       timestamp: 'Vừa xong',
       likes: 0,
       shares: 0,
