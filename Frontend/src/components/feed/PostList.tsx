@@ -9,13 +9,17 @@ export function PostList() {
   const [visibleCount, setVisibleCount] = useState(3);
   const debouncedSearch = useDebounce(search, 300);
 
-  const filteredPosts = useMemo(
-    () =>
-      posts.filter((post) =>
-        `${post.user.name} ${post.content}`.toLowerCase().includes(debouncedSearch.toLowerCase()),
-      ),
-    [debouncedSearch, posts],
-  );
+ const filteredPosts = useMemo(
+  () =>
+    Array.isArray(posts)
+      ? posts.filter((post) =>
+          `${post.user.name} ${post.content}`
+            .toLowerCase()
+            .includes(debouncedSearch.toLowerCase()),
+        )
+      : [],
+  [debouncedSearch, posts],
+);
 
   if (loading) {
     return (
