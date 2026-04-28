@@ -6,13 +6,61 @@ const localPosts: Post[] = JSON.parse(JSON.stringify(mockPosts)) as Post[];
 
 const simulateDelay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function fetchPosts(): Promise<Post[]> {
+const formatTimestamp = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'Vừa xong';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
+  return date.toLocaleDateString('vi-VN');
+};
+
+const mapBackendPostToFrontend = (p: any): Post => ({
+  id: p.id.toString(),
+  userId: p.userId.toString(),
+  user: {
+    id: p.userId.toString(),
+    name: p.userFullName,
+    avatarUrl: p.userAvatarUrl || 'https://i.pravatar.cc/150?u=' + p.userId,
+  },
+  content: p.content,
+  imageUrl: p.imageUrl,
+  timestamp: formatTimestamp(p.createdAt),
+  likes: p.likeCount,
+  shares: 0, // Backend chưa hỗ trợ
+  comments: [], // Backend trả về CommentCount thay vì mảng comment ở feed
+  isLiked: false, // Cần API riêng để check hoặc gán từ backend
+});
+
+export interface PaginatedPosts {
+  items: Post[];
+  nextCursorId: number | null;
+  hasNextPage: boolean;
+}
+
+export async function fetchPosts(cursorId?: number, limit = 5): Promise<PaginatedPosts> {
   try {
-    const response = await http.get<Post[]>('/posts');
-    return response.data;
-  } catch {
+    const response = await http.get<{ items: any[]; nextCursorId: number | null; hasNextPage: boolean }>('/posts', {
+      params: { cursorId, limit },
+    });
+    
+    const { items, nextCursorId, hasNextPage } = response.data;
+    
+    return {
+      items: Array.isArray(items) ? items.map(mapBackendPostToFrontend) : [],
+      nextCursorId: nextCursorId || null,
+      hasNextPage: hasNextPage || false,
+    };
+  } catch (error) {
+    console.error('Lỗi khi tải bài viết:', error);
     await simulateDelay(500);
-    return localPosts;
+    return {
+      items: localPosts,
+      nextCursorId: null,
+      hasNextPage: false,
+    };
   }
 }
 
@@ -57,9 +105,10 @@ export async function createComment(postId: string, content: string): Promise<Co
 
 export async function createPost(content: string): Promise<Post> {
   try {
-    const response = await http.post<Post>('/posts', { content });
-    return response.data;
-  } catch {
+    const response = await http.post<any>('/posts', { content });
+    return mapBackendPostToFrontend(response.data);
+  } catch (error) {
+    console.error('Lỗi khi tạo bài viết:', error);
     await simulateDelay();
     const newPost: Post = {
       id: `p-${Date.now()}`,

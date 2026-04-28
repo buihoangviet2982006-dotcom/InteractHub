@@ -26,6 +26,7 @@ export interface DecodedToken {
   exp: number;
   iss: string;
   aud: string;
+  [key: string]: any;
 }
 
 export interface User {

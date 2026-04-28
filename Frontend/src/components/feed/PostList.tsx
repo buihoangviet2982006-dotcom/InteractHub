@@ -5,8 +5,7 @@ import { PostSkeleton } from '../common/PostSkeleton';
 import { PostItem } from './PostItem';
 
 export function PostList() {
-  const { posts, loading, error, search } = usePosts();
-  const [visibleCount, setVisibleCount] = useState(3);
+  const { posts, loading, loadingMore, error, search, hasNextPage, loadMore } = usePosts();
   const debouncedSearch = useDebounce(search, 300);
 
  const filteredPosts = useMemo(
@@ -36,15 +35,24 @@ export function PostList() {
 
   return (
     <div className="space-y-4">
-      {filteredPosts.slice(0, visibleCount).map((post) => (
+      {filteredPosts.map((post) => (
         <PostItem key={post.id} post={post} />
       ))}
-      {visibleCount < filteredPosts.length && (
+      
+      {hasNextPage && (
         <button
-          onClick={() => setVisibleCount((prev) => prev + 3)}
-          className="w-full bg-white hover:bg-gray-50 border rounded-lg py-2.5 text-sm font-medium text-gray-700"
+          onClick={() => loadMore()}
+          disabled={loadingMore}
+          className="w-full bg-white hover:bg-gray-50 border rounded-lg py-2.5 text-sm font-medium text-gray-700 disabled:opacity-50 flex items-center justify-center space-x-2"
         >
-          Xem thêm bài viết
+          {loadingMore ? (
+            <>
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              <span>Đang tải...</span>
+            </>
+          ) : (
+            <span>Xem thêm bài viết</span>
+          )}
         </button>
       )}
     </div>

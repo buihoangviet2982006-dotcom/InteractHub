@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: res.email,
           fullName: res.fullName,
           avatarUrl: res.avatarUrl,
-          role: decoded.role || 'User',
+          role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'User',
         };
 
         localStorage.setItem('token', res.token);
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: res.email,
           fullName: res.fullName,
           avatarUrl: res.avatarUrl,
-          role: decoded.role || 'User',
+          role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'User',
         };
 
         localStorage.setItem('token', res.token);

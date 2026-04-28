@@ -6,8 +6,10 @@ import { useAuth } from '../../contexts/AuthContext';
 
 export function Navbar() {
   const { search, setSearch } = usePosts();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
+
+  const displayUser = user || currentUser;
 
   return (
     <nav className="bg-[#1877f2] h-14 flex items-center justify-between px-4 sticky top-0 z-50">
@@ -46,8 +48,8 @@ export function Navbar() {
         <button className="flex focus:outline-none">
           <img
             className="h-9 w-9 rounded-full object-cover border-2 border-transparent hover:border-white transition-colors"
-            src={currentUser.avatarUrl}
-            alt={currentUser.name}
+            src={displayUser.avatarUrl || 'https://i.pravatar.cc/150?u=a042581f4e29026024d'}
+            alt={displayUser.fullName || displayUser.name}
             loading="lazy"
           />
         </button>

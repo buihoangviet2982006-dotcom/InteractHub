@@ -2,23 +2,26 @@ import { useState } from 'react';
 import { Image, X } from 'lucide-react';
 import { currentUser } from '../../data/mockData';
 import { usePosts } from '../../contexts/PostContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function CreatePost() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [postText, setPostText] = useState('');
   const { addPost } = usePosts();
+  const { user } = useAuth();
+  const displayUser = user || currentUser;
 
   return (
     <>
       {/* Trigger Box */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4 relative z-10 w-full">
         <div className="flex space-x-3 mb-3">
-          <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-10 h-10 rounded-full" />
+          <img src={displayUser.avatarUrl || 'https://i.pravatar.cc/150?u=a042581f4e29026024d'} alt={displayUser.fullName || displayUser.name} className="w-10 h-10 rounded-full" />
           <div 
             className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 hover:bg-gray-200 transition-colors cursor-pointer flex items-center"
             onClick={() => setIsModalOpen(true)}
           >
-            <span className="text-gray-500">Bạn đang nghĩ gì, {currentUser.name}?</span>
+            <span className="text-gray-500">Bạn đang nghĩ gì, {displayUser.fullName || displayUser.name}?</span>
           </div>
         </div>
         
@@ -51,9 +54,9 @@ export function CreatePost() {
             {/* Modal Body */}
             <div className="p-4 flex flex-col flex-1 sm:h-[400px]">
               <div className="flex items-center space-x-3 mb-4">
-                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-10 h-10 rounded-full" />
+                <img src={displayUser.avatarUrl || 'https://i.pravatar.cc/150?u=a042581f4e29026024d'} alt={displayUser.fullName || displayUser.name} className="w-10 h-10 rounded-full" />
                 <div>
-                  <h3 className="font-semibold text-gray-900 leading-tight">{currentUser.name}</h3>
+                  <h3 className="font-semibold text-gray-900 leading-tight">{displayUser.fullName || displayUser.name}</h3>
                   <div className="bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-0.5 rounded-md mt-1 flex items-center w-max">
                     Bạn bè
                   </div>
@@ -62,7 +65,7 @@ export function CreatePost() {
 
               <textarea
                 className="w-full text-xl sm:text-2xl placeholder-gray-500 outline-none resize-none flex-1 min-h-[150px]"
-                placeholder={`Bạn đang nghĩ gì, ${currentUser.name}?`}
+                placeholder={`Bạn đang nghĩ gì, ${displayUser.fullName || displayUser.name}?`}
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
                 autoFocus

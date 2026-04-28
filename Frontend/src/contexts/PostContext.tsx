@@ -2,14 +2,18 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Comment, Post } from '../types';
 import { createComment, createPost, fetchPosts, likePost } from '../services/postsApi';
+import { useAuth } from './AuthContext';
 
 interface PostContextValue {
   posts: Post[];
   loading: boolean;
+  loadingMore: boolean;
   error: string | null;
   search: string;
+  hasNextPage: boolean;
   setSearch: (value: string) => void;
   addPost: (content: string) => Promise<void>;
+  loadMore: () => Promise<void>;
   toggleLike: (postId: string) => Promise<void>;
   addComment: (postId: string, content: string) => Promise<void>;
 }
@@ -19,18 +23,31 @@ const PostContext = createContext<PostContextValue | undefined>(undefined);
 export function PostProvider({ children }: { children: ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [nextCursorId, setNextCursorId] = useState<number | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     let mounted = true;
 
     const loadPosts = async () => {
+      if (!isAuthenticated) {
+        setPosts([]);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        const data = await fetchPosts();
+        const res = await fetchPosts();
         if (mounted) {
-          setPosts(data);
+          setPosts(res.items);
+          setNextCursorId(res.nextCursorId);
+          setHasNextPage(res.hasNextPage);
           setError(null);
         }
       } catch (err) {
@@ -48,18 +65,35 @@ export function PostProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const value = useMemo<PostContextValue>(
     () => ({
       posts,
       loading,
+      loadingMore,
       error,
       search,
+      hasNextPage,
       setSearch,
       addPost: async (content: string) => {
         const optimisticPost = await createPost(content);
         setPosts((prev) => [optimisticPost, ...prev.filter((p) => p.id !== optimisticPost.id)]);
+      },
+      loadMore: async () => {
+        if (loadingMore || !hasNextPage || !nextCursorId) return;
+
+        try {
+          setLoadingMore(true);
+          const res = await fetchPosts(nextCursorId);
+          setPosts((prev) => [...prev, ...res.items]);
+          setNextCursorId(res.nextCursorId);
+          setHasNextPage(res.hasNextPage);
+        } catch (err) {
+          console.error('Lỗi khi tải thêm bài viết:', err);
+        } finally {
+          setLoadingMore(false);
+        }
       },
       toggleLike: async (postId: string) => {
         const previousPosts = posts;
@@ -140,7 +174,7 @@ export function PostProvider({ children }: { children: ReactNode }) {
         }
       },
     }),
-    [posts, loading, error, search],
+    [posts, loading, loadingMore, error, search, hasNextPage, nextCursorId],
   );
 
   return <PostContext.Provider value={value}>{children}</PostContext.Provider>;
