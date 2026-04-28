@@ -27,7 +27,7 @@ public class AppDbContext : DbContext
             entity.HasIndex(u => u.Email).IsUnique();
             entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(500);
             entity.Property(u => u.FullName).IsRequired().HasMaxLength(100);
-            entity.Property(u => u.AvatarUrl).HasMaxLength(500);
+            entity.Property(u => u.AvatarUrl).HasColumnType("nvarchar(max)");
             entity.Property(u => u.Bio).HasMaxLength(1000);
         });
 
@@ -139,4 +139,4 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
-}
+}

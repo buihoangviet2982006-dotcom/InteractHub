@@ -70,6 +70,22 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task<AvatarUpdateResponseDto> UpdateAvatarAsync(int userId, AvatarUpdateDto dto)
+    {
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user == null) throw new Exception("User not found.");
+
+        user.AvatarUrl = dto.AvatarUrl;
+        _userRepo.Update(user);
+        await _userRepo.SaveChangesAsync();
+
+        return new AvatarUpdateResponseDto
+        {
+            UserId = user.Id,
+            AvatarUrl = user.AvatarUrl
+        };
+    }
+
     private string GenerateJwtToken(User user)
     {
         var jwtSettings = _config.GetSection("JwtSettings");

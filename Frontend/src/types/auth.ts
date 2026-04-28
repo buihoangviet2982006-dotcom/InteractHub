@@ -17,6 +17,15 @@ export interface AuthResponseDto {
   avatarUrl?: string;
 }
 
+export interface AvatarUpdateDto {
+  avatarUrl: string;
+}
+
+export interface AvatarUpdateResponseDto {
+  userId: number;
+  avatarUrl?: string;
+}
+
 export interface DecodedToken {
   UserId: string;
   email: string;

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Comment, Post } from '../types';
-import { createComment, createPost, fetchPosts, likePost } from '../services/postsApi';
+import { createComment, createPost, deletePost as deletePostApi, fetchPosts, likePost, updatePost as updatePostApi } from '../services/postsApi';
 import { useAuth } from './AuthContext';
 
 interface PostContextValue {
@@ -13,6 +13,8 @@ interface PostContextValue {
   hasNextPage: boolean;
   setSearch: (value: string) => void;
   addPost: (content: string, imageUrl?: string) => Promise<void>;
+  updatePost: (postId: string, content: string, imageUrl?: string) => Promise<void>;
+  deletePost: (postId: string) => Promise<void>;
   loadMore: () => Promise<void>;
   toggleLike: (postId: string) => Promise<void>;
   addComment: (postId: string, content: string) => Promise<void>;
@@ -29,7 +31,7 @@ export function PostProvider({ children }: { children: ReactNode }) {
   const [nextCursorId, setNextCursorId] = useState<number | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     let mounted = true;
@@ -67,6 +69,24 @@ export function PostProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.userId === user.id.toString()
+          ? {
+              ...post,
+              user: {
+                ...post.user,
+                avatarUrl: user.avatarUrl || post.user.avatarUrl,
+              },
+            }
+          : post,
+      ),
+    );
+  }, [user]);
+
   const value = useMemo<PostContextValue>(
     () => ({
       posts,
@@ -79,6 +99,36 @@ export function PostProvider({ children }: { children: ReactNode }) {
       addPost: async (content: string, imageUrl?: string) => {
         const optimisticPost = await createPost(content, imageUrl);
         setPosts((prev) => [optimisticPost, ...prev.filter((p) => p.id !== optimisticPost.id)]);
+      },
+      updatePost: async (postId: string, content: string, imageUrl?: string) => {
+        const previousPosts = posts;
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId
+              ? {
+                  ...post,
+                  content,
+                  imageUrl,
+                }
+              : post,
+          ),
+        );
+
+        try {
+          await updatePostApi(postId, content, imageUrl);
+        } catch {
+          setPosts(previousPosts);
+        }
+      },
+      deletePost: async (postId: string) => {
+        const previousPosts = posts;
+        setPosts((prev) => prev.filter((post) => post.id !== postId));
+
+        try {
+          await deletePostApi(postId);
+        } catch {
+          setPosts(previousPosts);
+        }
       },
       loadMore: async () => {
         if (loadingMore || !hasNextPage || !nextCursorId) return;
@@ -117,7 +167,6 @@ export function PostProvider({ children }: { children: ReactNode }) {
               post.id === postId
                 ? {
                     ...post,
-                    likes: serverState.likes,
                     isLiked: serverState.isLiked,
                   }
                 : post,
@@ -128,14 +177,22 @@ export function PostProvider({ children }: { children: ReactNode }) {
         }
       },
       addComment: async (postId: string, content: string) => {
+        const currentUser = user
+          ? {
+              id: user.id.toString(),
+              name: user.fullName,
+              avatarUrl: user.avatarUrl || `https://i.pravatar.cc/150?u=${user.id}`,
+            }
+          : {
+              id: 'u1',
+              name: 'Bạn',
+              avatarUrl: 'https://i.pravatar.cc/150?u=you',
+            };
+
         const optimisticComment: Comment = {
           id: `tmp-${Date.now()}`,
-          userId: 'u1',
-          user: {
-            id: 'u1',
-            name: 'Bạn',
-            avatarUrl: 'https://i.pravatar.cc/150?u=you',
-          },
+          userId: currentUser.id,
+          user: currentUser,
           content,
           timestamp: 'Đang gửi...',
         };
@@ -174,7 +231,7 @@ export function PostProvider({ children }: { children: ReactNode }) {
         }
       },
     }),
-    [posts, loading, loadingMore, error, search, hasNextPage, nextCursorId],
+    [posts, loading, loadingMore, error, search, hasNextPage, nextCursorId, user],
   );
 
   return <PostContext.Provider value={value}>{children}</PostContext.Provider>;

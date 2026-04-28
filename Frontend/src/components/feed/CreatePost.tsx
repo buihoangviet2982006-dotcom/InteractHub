@@ -11,7 +11,7 @@ export function CreatePost() {
   const [showImageInput, setShowImageInput] = useState(false);
   const { addPost } = usePosts();
   const { user } = useAuth();
-  const displayUser = user || currentUser;
+  const displayUser = (user || currentUser) as any;
   
   const handlePost = async () => {
     const value = postText.trim();

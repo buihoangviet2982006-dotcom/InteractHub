@@ -25,3 +25,10 @@ export interface Post {
   shares: number;
   isLiked?: boolean;
 }
+
+export interface Friendship {
+  friendId: string;
+  friendName: string;
+  friendAvatarUrl?: string;
+  createdAt: string;
+}

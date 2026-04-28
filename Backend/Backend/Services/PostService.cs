@@ -10,6 +10,7 @@ public interface IPostService
     Task<CursorPagedResult<PostResponseDto>> GetPostsAsync(CursorPaginationDto pagination);
     Task<PostResponseDto?> GetPostByIdAsync(int id);
     Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto);
+    Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto);
     Task<bool> DeletePostAsync(int id, int userId);
 }
 
@@ -114,6 +115,21 @@ public class PostService : IPostService
         await _postRepo.SaveChangesAsync(); // Lưu toàn bộ (cả Hashtag vì chung DbContext qua Scoped)
 
         return await GetPostByIdAsync(post.Id) ?? throw new Exception("Tạo bài viết thất bại!");
+    }
+
+    public async Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto)
+    {
+        var post = await _postRepo.GetByIdAsync(id);
+        if (post == null) throw new Exception("Bài viết không tồn tại.");
+        if (post.UserId != userId) throw new UnauthorizedAccessException("Không có quyền chỉnh sửa bài viết này.");
+
+        post.Content = dto.Content;
+        post.ImageUrl = dto.ImageUrl;
+
+        _postRepo.Update(post);
+        await _postRepo.SaveChangesAsync();
+
+        return await GetPostByIdAsync(post.Id) ?? throw new Exception("Cập nhật bài viết thất bại.");
     }
 
     public async Task<bool> DeletePostAsync(int id, int userId)

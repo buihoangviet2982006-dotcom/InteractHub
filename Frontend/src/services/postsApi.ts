@@ -17,6 +17,20 @@ const formatTimestamp = (dateString: string) => {
   return date.toLocaleDateString('vi-VN');
 };
 
+const getCurrentTimestamp = () => new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+const mapBackendCommentToFrontend = (c: any): Comment => ({
+  id: c.id.toString(),
+  userId: c.userId.toString(),
+  user: {
+    id: c.userId.toString(),
+    name: c.userFullName,
+    avatarUrl: c.userAvatarUrl || `https://i.pravatar.cc/150?u=${c.userId}`,
+  },
+  content: c.content,
+  timestamp: formatTimestamp(c.createdAt),
+});
+
 const mapBackendPostToFrontend = (p: any): Post => ({
   id: p.id.toString(),
   userId: p.userId.toString(),
@@ -64,10 +78,12 @@ export async function fetchPosts(cursorId?: number, limit = 5): Promise<Paginate
   }
 }
 
-export async function likePost(postId: string): Promise<{ likes: number; isLiked: boolean }> {
+export async function likePost(postId: string): Promise<{ isLiked: boolean }> {
   try {
-    const response = await http.post<{ likes: number; isLiked: boolean }>(`/posts/${postId}/like`);
-    return response.data;
+    const response = await http.post<{ isLiked: boolean; message: string }>(`/posts/${postId}/likes`, {
+      postId: Number(postId),
+    });
+    return { isLiked: response.data.isLiked };
   } catch {
     await simulateDelay();
     const post = localPosts.find((item) => item.id === postId);
@@ -77,14 +93,17 @@ export async function likePost(postId: string): Promise<{ likes: number; isLiked
     const isLiked = !post.isLiked;
     post.isLiked = isLiked;
     post.likes += isLiked ? 1 : -1;
-    return { likes: post.likes, isLiked };
+    return { isLiked };
   }
 }
 
 export async function createComment(postId: string, content: string): Promise<Comment> {
   try {
-    const response = await http.post<Comment>(`/posts/${postId}/comments`, { content });
-    return response.data;
+    const response = await http.post<any>(`/posts/${postId}/comments`, {
+      postId: Number(postId),
+      content,
+    });
+    return mapBackendCommentToFrontend(response.data);
   } catch {
     await simulateDelay();
     const post = localPosts.find((item) => item.id === postId);
@@ -103,6 +122,40 @@ export async function createComment(postId: string, content: string): Promise<Co
   }
 }
 
+export async function fetchComments(postId: string): Promise<Comment[]> {
+  try {
+    const response = await http.get<any[]>(`/posts/${postId}/comments`);
+    return response.data.map(mapBackendCommentToFrontend);
+  } catch {
+    await simulateDelay();
+    return [];
+  }
+}
+
+export async function deletePost(postId: string): Promise<void> {
+  try {
+    await http.delete(`/posts/${postId}`);
+  } catch {
+    await simulateDelay();
+  }
+}
+
+export async function updatePost(postId: string, content: string, imageUrl?: string): Promise<Post> {
+  try {
+    const response = await http.put<any>(`/posts/${postId}`, { content, imageUrl });
+    return mapBackendPostToFrontend(response.data);
+  } catch {
+    await simulateDelay();
+    const post = localPosts.find((item) => item.id === postId);
+    if (!post) {
+      throw new Error('Không tìm thấy bài viết');
+    }
+    post.content = content;
+    post.imageUrl = imageUrl;
+    return post;
+  }
+}
+
 export async function createPost(content: string, imageUrl?: string): Promise<Post> {
   try {
     const response = await http.post<any>('/posts', { content, imageUrl });
@@ -116,7 +169,7 @@ export async function createPost(content: string, imageUrl?: string): Promise<Po
       user: currentUser,
       content,
       imageUrl,
-      timestamp: 'Vừa xong',
+      timestamp: getCurrentTimestamp(),
       likes: 0,
       shares: 0,
       comments: [],

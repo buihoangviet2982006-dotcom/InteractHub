@@ -9,6 +9,7 @@ interface AuthContextValue {
   user: User | null;
   login: (data: LoginDto) => Promise<void>;
   register: (data: RegisterDto) => Promise<void>;
+  updateAvatar: (avatarUrl: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -81,6 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(loggedUser));
         setUser(loggedUser);
         setIsAuthenticated(true);
+      },
+      updateAvatar: async (avatarUrl: string) => {
+        const res = await authApi.updateAvatar({ avatarUrl });
+        if (!user) throw new Error('Người dùng chưa đăng nhập');
+
+        const updatedUser = { ...user, avatarUrl: res.avatarUrl ?? user.avatarUrl };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
       },
       logout: () => {
         localStorage.removeItem('token');

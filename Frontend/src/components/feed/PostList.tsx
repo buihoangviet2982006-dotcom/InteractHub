@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { usePosts } from '../../contexts/PostContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PostSkeleton } from '../common/PostSkeleton';
