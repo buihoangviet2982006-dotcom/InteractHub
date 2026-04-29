@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ThumbsUp, MessageSquare, Share2, MoreHorizontal, Trash2, Edit3, X, Image as ImageIcon } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Share2, MoreHorizontal, Trash2, Edit3, X, Image as ImageIcon, Flag } from 'lucide-react';
 import type { Post } from '../../types';
 import { usePosts } from '../../contexts/PostContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { PostDetailModal } from './PostDetailModal';
+import { ReportPostModal } from './ReportPostModal';
 
 interface PostItemProps {
   post: Post;
@@ -14,6 +15,7 @@ export function PostItem({ post }: PostItemProps) {
   const [showActions, setShowActions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [editFile, setEditFile] = useState<File | null>(null);
   const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(post.imageData || null);
@@ -87,11 +89,11 @@ export function PostItem({ post }: PostItemProps) {
             </button>
           </div>
 
-          {showActions && isOwner && (
+          {showActions && (
             <div className="fixed inset-0 z-30" onClick={() => setShowActions(false)} />
           )}
-
-          {showActions && isOwner && (
+          
+          {showActions && (
             <div className="absolute right-4 top-14 z-40 w-48 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                 <span className="font-semibold text-sm text-gray-800">Tùy chọn</span>
@@ -99,22 +101,40 @@ export function PostItem({ post }: PostItemProps) {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={handleEditClick}
-                className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center space-x-2 text-gray-700"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Chỉnh sửa</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center space-x-2 text-red-600"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Xóa</span>
-              </button>
+              
+              {isOwner ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleEditClick}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center space-x-2 text-gray-700"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Chỉnh sửa</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center space-x-2 text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Xóa</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowActions(false);
+                    setShowReportModal(true);
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center space-x-2 text-orange-600"
+                >
+                  <Flag className="w-4 h-4" />
+                  <span>Báo cáo bài viết</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -245,6 +265,13 @@ export function PostItem({ post }: PostItemProps) {
             </div>
           </div>
         </div>
+      )}
+      {/* Report Modal */}
+      {showReportModal && (
+        <ReportPostModal
+          postId={Number(post.id)}
+          onClose={() => setShowReportModal(false)}
+        />
       )}
     </>
   );

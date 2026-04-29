@@ -32,3 +32,17 @@ export interface Friendship {
   friendAvatarData?: string;
   createdAt: string;
 }
+
+export interface PostReportCreate {
+  postId: number;
+  reason: string;
+}
+
+export interface PostReportResponse {
+  id: number;
+  reporterId: number;
+  reporterName: string;
+  postId: number;
+  reason: string;
+  createdAt: string;
+}
