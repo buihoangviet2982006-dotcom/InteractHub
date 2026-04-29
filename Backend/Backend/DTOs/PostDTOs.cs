@@ -4,14 +4,12 @@ namespace Backend.DTOs;
 
 public class PostCreateDto
 {
-    [Required]
     [MaxLength(2000)]
     public string Content { get; set; } = string.Empty;
 }
 
 public class PostUpdateDto
 {
-    [Required]
     [MaxLength(2000)]
     public string Content { get; set; } = string.Empty;
 }

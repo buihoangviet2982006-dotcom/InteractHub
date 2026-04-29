@@ -40,7 +40,7 @@ export function Navbar() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="block w-full pl-9 pr-3 py-1.5 border border-transparent rounded-full leading-5 bg-[#f0f2f5] placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-300 sm:text-sm transition-all"
-              placeholder="Tìm kiếm người dùng..."
+              placeholder="Tìm kiếm nội dung..."
             />
           </form>
         </div>

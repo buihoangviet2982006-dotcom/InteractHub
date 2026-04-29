@@ -43,6 +43,9 @@ public class PostsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreatePost([FromForm] PostCreateDto dto, IFormFile? image)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var userIdString = User.FindFirst("UserId")?.Value;
         if (!int.TryParse(userIdString, out int userId))
             return Unauthorized("Invalid token.");
@@ -71,6 +74,9 @@ public class PostsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdatePost(int id, [FromForm] PostUpdateDto dto, IFormFile? image)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var userIdString = User.FindFirst("UserId")?.Value;
         if (!int.TryParse(userIdString, out int userId))
             return Unauthorized("Invalid token.");

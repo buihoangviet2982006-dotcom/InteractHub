@@ -1,15 +1,23 @@
 import type { Comment, Post } from '../types';
 import { http } from './http';
 
-const formatTimestamp = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+const parseClientTime = (dateString: string) => {
+  const localDate = new Date(dateString);
+  if (Number.isNaN(localDate.getTime())) {
+    return new Date();
+  }
+  return localDate;
+};
 
-  if (diffInSeconds < 60) return 'Vừa xong';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
-  return date.toLocaleDateString('vi-VN');
+const formatTimestamp = (dateString: string) => {
+  const date = parseClientTime(dateString);
+  return date.toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
 
 // Helper to convert Base64 from backend to displayable Data URL
@@ -55,8 +63,17 @@ export interface PaginatedPosts {
   hasNextPage: boolean;
 }
 
+type PostsApiResponse = {
+  items?: any[];
+  nextCursorId?: number | null;
+  hasNextPage?: boolean;
+  Items?: any[];
+  NextCursorId?: number | null;
+  HasNextPage?: boolean;
+};
+
 export async function fetchPosts(cursorId?: number, limit = 5): Promise<PaginatedPosts> {
-  const response = await http.get<{ items: any[]; nextCursorId: number | null; hasNextPage: boolean }>('/posts', {
+  const response = await http.get<PostsApiResponse>('/posts', {
     params: { cursorId, limit },
   });
   
@@ -103,9 +120,7 @@ export async function updatePost(postId: string, content: string, imageFile?: Fi
     formData.append('image', imageFile);
   }
 
-  const response = await http.put<any>(`/posts/${postId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  const response = await http.put<any>(`/posts/${postId}`, formData);
   return mapBackendPostToFrontend(response.data);
 }
 
@@ -116,8 +131,6 @@ export async function createPost(content: string, imageFile?: File): Promise<Pos
     formData.append('image', imageFile);
   }
 
-  const response = await http.post<any>('/posts', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  const response = await http.post<any>('/posts', formData);
   return mapBackendPostToFrontend(response.data);
 }

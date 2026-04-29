@@ -18,6 +18,12 @@ export function CreatePost() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ảnh vượt quá 5MB. Vui lòng chọn ảnh nhỏ hơn.');
+        e.target.value = '';
+        return;
+      }
+
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {

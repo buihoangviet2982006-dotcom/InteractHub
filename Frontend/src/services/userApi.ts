@@ -46,15 +46,11 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
 export async function updateAvatar(file: File): Promise<void> {
   const formData = new FormData();
   formData.append('file', file);
-  await http.patch('/users/me/avatar', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  await http.patch('/users/me/avatar', formData);
 }
 
 export async function updateCover(file: File): Promise<void> {
   const formData = new FormData();
   formData.append('file', file);
-  await http.patch('/users/me/cover', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  await http.patch('/users/me/cover', formData);
 }

@@ -83,7 +83,7 @@ public class PostService : IPostService
             UserId = userId,
             Content = dto.Content,
             ImageData = imageData,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
 
         var hashtagMatches = Regex.Matches(dto.Content, @"#\w+");

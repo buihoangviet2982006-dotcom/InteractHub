@@ -5,7 +5,7 @@ public class Post : Entity
 
     public string? Content { get; set; }
     public byte[]? ImageData { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     // Khóa ngoại liên kết tới User
     public int UserId { get; set; }
