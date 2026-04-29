@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   name: string;
-  avatarUrl: string;
+  avatarData?: string; // Base64 string from backend
   isOnline?: boolean;
 }
 
@@ -18,7 +18,7 @@ export interface Post {
   userId: string;
   user: User;
   content: string;
-  imageUrl?: string;
+  imageData?: string; // Base64 string from backend
   timestamp: string;
   likes: number;
   comments: Comment[];
@@ -29,6 +29,6 @@ export interface Post {
 export interface Friendship {
   friendId: string;
   friendName: string;
-  friendAvatarUrl?: string;
+  friendAvatarData?: string;
   createdAt: string;
 }

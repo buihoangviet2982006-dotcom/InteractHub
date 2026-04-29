@@ -10,8 +10,8 @@ public interface IPostService
     Task<CursorPagedResult<PostResponseDto>> GetPostsAsync(CursorPaginationDto pagination);
     Task<CursorPagedResult<PostResponseDto>> GetPostsByUserAsync(int userId, CursorPaginationDto pagination);
     Task<PostResponseDto?> GetPostByIdAsync(int id);
-    Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto);
-    Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto);
+    Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto, byte[]? imageData);
+    Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto, byte[]? imageData);
     Task<bool> DeletePostAsync(int id, int userId);
 }
 
@@ -26,37 +26,32 @@ public class PostService : IPostService
         _hashtagRepo = hashtagRepo;
     }
 
+    private static PostResponseDto MapToDto(Post p) => new()
+    {
+        Id = p.Id,
+        UserId = p.UserId,
+        UserFullName = p.User?.FullName ?? "Unknown",
+        UserAvatarData = p.User?.AvatarData,
+        Content = p.Content ?? string.Empty,
+        ImageData = p.ImageData,
+        CreatedAt = p.CreatedAt,
+        LikeCount = p.Likes.Count,
+        CommentCount = p.Comments.Count,
+        Hashtags = p.Hashtags.Select(h => h.Name!).ToList()
+    };
+
     public async Task<CursorPagedResult<PostResponseDto>> GetPostsAsync(CursorPaginationDto pagination)
     {
         var posts = await _postRepo.GetPostsWithPaginationAsync(pagination.Limit, pagination.CursorId);
         
         bool hasNextPage = posts.Count > pagination.Limit;
-        if (hasNextPage)
-        {
-            posts.RemoveAt(pagination.Limit);
-        }
-
-        var nextCursor = posts.LastOrDefault()?.Id;
-
-        var items = posts.Select(p => new PostResponseDto
-        {
-            Id = p.Id,
-            UserId = p.UserId,
-            UserFullName = p.User?.FullName ?? "Unknown",
-            UserAvatarUrl = p.User?.AvatarUrl,
-            Content = p.Content ?? string.Empty,
-            ImageUrl = p.ImageUrl,
-            CreatedAt = p.CreatedAt,
-            LikeCount = p.Likes.Count,
-            CommentCount = p.Comments.Count,
-            Hashtags = p.Hashtags.Select(h => h.Name!).ToList()
-        }).ToList();
+        if (hasNextPage) posts.RemoveAt(pagination.Limit);
 
         return new CursorPagedResult<PostResponseDto>
         {
-            Items = items,
+            Items = posts.Select(MapToDto).ToList(),
             HasNextPage = hasNextPage,
-            NextCursorId = nextCursor
+            NextCursorId = posts.LastOrDefault()?.Id
         };
     }
 
@@ -65,62 +60,29 @@ public class PostService : IPostService
         var posts = await _postRepo.GetPostsByUserIdWithPaginationAsync(userId, pagination.Limit, pagination.CursorId);
         
         bool hasNextPage = posts.Count > pagination.Limit;
-        if (hasNextPage)
-        {
-            posts.RemoveAt(pagination.Limit);
-        }
-
-        var nextCursor = posts.LastOrDefault()?.Id;
-
-        var items = posts.Select(p => new PostResponseDto
-        {
-            Id = p.Id,
-            UserId = p.UserId,
-            UserFullName = p.User?.FullName ?? "Unknown",
-            UserAvatarUrl = p.User?.AvatarUrl,
-            Content = p.Content ?? string.Empty,
-            ImageUrl = p.ImageUrl,
-            CreatedAt = p.CreatedAt,
-            LikeCount = p.Likes.Count,
-            CommentCount = p.Comments.Count,
-            Hashtags = p.Hashtags.Select(h => h.Name!).ToList()
-        }).ToList();
+        if (hasNextPage) posts.RemoveAt(pagination.Limit);
 
         return new CursorPagedResult<PostResponseDto>
         {
-            Items = items,
+            Items = posts.Select(MapToDto).ToList(),
             HasNextPage = hasNextPage,
-            NextCursorId = nextCursor
+            NextCursorId = posts.LastOrDefault()?.Id
         };
     }
 
     public async Task<PostResponseDto?> GetPostByIdAsync(int id)
     {
         var p = await _postRepo.GetPostWithDetailsAsync(id);
-        if (p == null) return null;
-
-        return new PostResponseDto
-        {
-            Id = p.Id,
-            UserId = p.UserId,
-            UserFullName = p.User?.FullName ?? "Unknown",
-            UserAvatarUrl = p.User?.AvatarUrl,
-            Content = p.Content ?? string.Empty,
-            ImageUrl = p.ImageUrl,
-            CreatedAt = p.CreatedAt,
-            LikeCount = p.Likes.Count,
-            CommentCount = p.Comments.Count,
-            Hashtags = p.Hashtags.Select(h => h.Name!).ToList()
-        };
+        return p == null ? null : MapToDto(p);
     }
 
-    public async Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto)
+    public async Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto, byte[]? imageData)
     {
         var post = new Post
         {
             UserId = userId,
             Content = dto.Content,
-            ImageUrl = dto.ImageUrl,
+            ImageData = imageData,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -134,9 +96,7 @@ public class PostService : IPostService
             foreach (var name in hashtagNames)
             {
                 if (existingHashtags.TryGetValue(name, out var existing))
-                {
                     post.Hashtags.Add(existing);
-                }
                 else
                 {
                     var newHashtag = new Hashtag { Name = name };
@@ -147,19 +107,21 @@ public class PostService : IPostService
         }
 
         await _postRepo.AddAsync(post);
-        await _postRepo.SaveChangesAsync(); // Lưu toàn bộ (cả Hashtag vì chung DbContext qua Scoped)
+        await _postRepo.SaveChangesAsync();
 
         return await GetPostByIdAsync(post.Id) ?? throw new Exception("Tạo bài viết thất bại!");
     }
 
-    public async Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto)
+    public async Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto, byte[]? imageData)
     {
         var post = await _postRepo.GetByIdAsync(id);
         if (post == null) throw new Exception("Bài viết không tồn tại.");
         if (post.UserId != userId) throw new UnauthorizedAccessException("Không có quyền chỉnh sửa bài viết này.");
 
         post.Content = dto.Content;
-        post.ImageUrl = dto.ImageUrl;
+        // Chỉ cập nhật ảnh nếu có file mới được gửi lên
+        if (imageData != null)
+            post.ImageData = imageData;
 
         _postRepo.Update(post);
         await _postRepo.SaveChangesAsync();
@@ -170,9 +132,7 @@ public class PostService : IPostService
     public async Task<bool> DeletePostAsync(int id, int userId)
     {
         var post = await _postRepo.GetByIdAsync(id);
-        if (post == null) return false;
-        
-        if (post.UserId != userId) return false;
+        if (post == null || post.UserId != userId) return false;
 
         _postRepo.Remove(post);
         await _postRepo.SaveChangesAsync();

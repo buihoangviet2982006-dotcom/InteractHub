@@ -35,7 +35,7 @@ public class CommentService : ICommentService
             PostId = c.PostId,
             UserId = c.UserId,
             UserFullName = c.User?.FullName ?? "Unknown",
-            UserAvatarUrl = c.User?.AvatarUrl,
+            UserAvatarData = c.User?.AvatarData,
             Content = c.Content!,
             CreatedAt = c.CreatedAt
         }).ToList();
@@ -70,7 +70,7 @@ public class CommentService : ICommentService
             PostId = comment.PostId,
             UserId = comment.UserId,
             UserFullName = user?.FullName ?? "Unknown",
-            UserAvatarUrl = user?.AvatarUrl,
+            UserAvatarData = user?.AvatarData,
             Content = comment.Content,
             CreatedAt = comment.CreatedAt
         };

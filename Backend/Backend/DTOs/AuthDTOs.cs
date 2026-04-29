@@ -32,17 +32,5 @@ public class AuthResponseDto
     public int UserId { get; set; }
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
-    public string? AvatarUrl { get; set; }
-}
-
-public class AvatarUpdateDto
-{
-    [Required]
-    public string AvatarUrl { get; set; } = string.Empty;
-}
-
-public class AvatarUpdateResponseDto
-{
-    public int UserId { get; set; }
-    public string? AvatarUrl { get; set; }
+    public byte[]? AvatarData { get; set; }
 }

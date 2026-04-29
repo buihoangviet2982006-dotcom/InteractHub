@@ -3,13 +3,13 @@ import type { ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { authApi } from '../services/authApi';
 import type { LoginDto, RegisterDto, User, DecodedToken } from '../types/auth';
+import { formatImageData } from '../services/postsApi';
 
 interface AuthContextValue {
   isAuthenticated: boolean;
   user: User | null;
   login: (data: LoginDto) => Promise<void>;
   register: (data: RegisterDto) => Promise<void>;
-  updateAvatar: (avatarUrl: string) => Promise<void>;
   setUser: (user: User) => void;
   logout: () => void;
 }
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: res.userId,
           email: res.email,
           fullName: res.fullName,
-          avatarUrl: res.avatarUrl,
+          avatarData: formatImageData(res.avatarData),
           role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'User',
         };
 
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: res.userId,
           email: res.email,
           fullName: res.fullName,
-          avatarUrl: res.avatarUrl,
+          avatarData: formatImageData(res.avatarData),
           role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'User',
         };
 
@@ -83,14 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(loggedUser));
         setUser(loggedUser);
         setIsAuthenticated(true);
-      },
-      updateAvatar: async (avatarUrl: string) => {
-        const res = await authApi.updateAvatar({ avatarUrl });
-        if (!user) throw new Error('Người dùng chưa đăng nhập');
-
-        const updatedUser = { ...user, avatarUrl: res.avatarUrl ?? user.avatarUrl };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
       },
       setUser: (userData: User) => {
         localStorage.setItem('user', JSON.stringify(userData));

@@ -19,7 +19,7 @@ public class CommentResponseDto
     public int PostId { get; set; }
     public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
-    public string? UserAvatarUrl { get; set; }
+    public byte[]? UserAvatarData { get; set; }
     public string Content { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }

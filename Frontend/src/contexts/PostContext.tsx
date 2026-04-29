@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Comment, Post } from '../types';
-import { createComment, createPost, deletePost as deletePostApi, fetchPosts, likePost, updatePost as updatePostApi } from '../services/postsApi';
+import { createComment, createPost, deletePost as deletePostApi, fetchPosts, likePost, updatePost as updatePostApi, fetchComments } from '../services/postsApi';
 import { useAuth } from './AuthContext';
 
 interface PostContextValue {
@@ -12,12 +12,13 @@ interface PostContextValue {
   search: string;
   hasNextPage: boolean;
   setSearch: (value: string) => void;
-  addPost: (content: string, imageUrl?: string) => Promise<void>;
-  updatePost: (postId: string, content: string, imageUrl?: string) => Promise<void>;
+  addPost: (content: string, imageFile?: File) => Promise<void>;
+  updatePost: (postId: string, content: string, imageFile?: File) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
   loadMore: () => Promise<void>;
   toggleLike: (postId: string) => Promise<void>;
   addComment: (postId: string, content: string) => Promise<void>;
+  loadComments: (postId: string) => Promise<void>;
 }
 
 const PostContext = createContext<PostContextValue | undefined>(undefined);
@@ -79,7 +80,7 @@ export function PostProvider({ children }: { children: ReactNode }) {
               ...post,
               user: {
                 ...post.user,
-                avatarUrl: user.avatarUrl || post.user.avatarUrl,
+                avatarData: user.avatarData || post.user.avatarData,
               },
             }
           : post,
@@ -96,26 +97,26 @@ export function PostProvider({ children }: { children: ReactNode }) {
       search,
       hasNextPage,
       setSearch,
-      addPost: async (content: string, imageUrl?: string) => {
-        const optimisticPost = await createPost(content, imageUrl);
+      addPost: async (content: string, imageFile?: File) => {
+        const optimisticPost = await createPost(content, imageFile);
         setPosts((prev) => [optimisticPost, ...prev.filter((p) => p.id !== optimisticPost.id)]);
       },
-      updatePost: async (postId: string, content: string, imageUrl?: string) => {
+      updatePost: async (postId: string, content: string, imageFile?: File) => {
         const previousPosts = posts;
+        
+        // We can't easily optimistic update the image since it's a File, 
+        // but we can update the content
         setPosts((prev) =>
           prev.map((post) =>
-            post.id === postId
-              ? {
-                  ...post,
-                  content,
-                  imageUrl,
-                }
-              : post,
+            post.id === postId ? { ...post, content } : post,
           ),
         );
 
         try {
-          await updatePostApi(postId, content, imageUrl);
+          const updated = await updatePostApi(postId, content, imageFile);
+          setPosts((prev) =>
+            prev.map((post) => (post.id === postId ? updated : post)),
+          );
         } catch {
           setPosts(previousPosts);
         }
@@ -177,22 +178,22 @@ export function PostProvider({ children }: { children: ReactNode }) {
         }
       },
       addComment: async (postId: string, content: string) => {
-        const currentUser = user
+        const currentUserMapped = user
           ? {
               id: user.id.toString(),
               name: user.fullName,
-              avatarUrl: user.avatarUrl || `https://i.pravatar.cc/150?u=${user.id}`,
+              avatarData: user.avatarData,
             }
           : {
               id: 'u1',
               name: 'Bạn',
-              avatarUrl: 'https://i.pravatar.cc/150?u=you',
+              avatarData: undefined,
             };
 
         const optimisticComment: Comment = {
           id: `tmp-${Date.now()}`,
-          userId: currentUser.id,
-          user: currentUser,
+          userId: currentUserMapped.id,
+          user: currentUserMapped,
           content,
           timestamp: 'Đang gửi...',
         };
@@ -228,6 +229,18 @@ export function PostProvider({ children }: { children: ReactNode }) {
                 : post,
             ),
           );
+        }
+      },
+      loadComments: async (postId: string) => {
+        try {
+          const comments = await fetchComments(postId);
+          setPosts((prev) =>
+            prev.map((post) =>
+              post.id === postId ? { ...post, comments } : post,
+            ),
+          );
+        } catch (err) {
+          console.error('Lỗi khi tải bình luận:', err);
         }
       },
     }),

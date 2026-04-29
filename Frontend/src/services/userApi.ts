@@ -1,16 +1,11 @@
-import { http, baseURL } from './http';
+import { http } from './http';
 import type { User } from '../types';
+import { formatImageData } from './postsApi';
 
-const API_ROOT = baseURL.replace('/api', '');
-
-const formatAvatarUrl = (url?: string) => {
-  if (!url) return undefined;
-  return url.startsWith('http') ? url : API_ROOT + url;
-};
-
-export interface UserProfile extends User {
+export interface UserProfile extends Omit<User, 'id'> {
+  id: string;
   email?: string;
-  coverUrl?: string;
+  coverData?: string;
   friendCount: number;
   isFriend: boolean;
   requestSent: boolean;
@@ -22,8 +17,7 @@ export async function searchUsers(query: string): Promise<User[]> {
   return response.data.map((u) => ({
     id: (u.id || u.Id || '').toString(),
     name: u.fullName || u.FullName,
-    avatarUrl: formatAvatarUrl(u.avatarUrl || u.AvatarUrl),
-    coverUrl: formatAvatarUrl(u.coverUrl || u.CoverUrl),
+    avatarData: formatImageData(u.avatarData || u.AvatarData),
   }));
 }
 
@@ -32,8 +26,7 @@ export async function getSuggestions(limit: number = 5): Promise<User[]> {
   return response.data.map((u) => ({
     id: (u.id || u.Id || '').toString(),
     name: u.fullName || u.FullName,
-    avatarUrl: formatAvatarUrl(u.avatarUrl || u.AvatarUrl),
-    coverUrl: formatAvatarUrl(u.coverUrl || u.CoverUrl),
+    avatarData: formatImageData(u.avatarData || u.AvatarData),
   }));
 }
 
@@ -45,15 +38,23 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     id: (data.id || data.Id || '').toString(),
     name: data.fullName || data.FullName,
     email: data.email || data.Email,
-    avatarUrl: formatAvatarUrl(data.avatarUrl || data.AvatarUrl),
-    coverUrl: formatAvatarUrl(data.coverUrl || data.CoverUrl),
+    avatarData: formatImageData(data.avatarData || data.AvatarData),
+    coverData: formatImageData(data.coverData || data.CoverData),
   };
 }
 
-export async function updateAvatar(avatarUrl: string): Promise<void> {
-  await http.patch('/users/me/avatar', { AvatarUrl: avatarUrl });
+export async function updateAvatar(file: File): Promise<void> {
+  const formData = new FormData();
+  formData.append('file', file);
+  await http.patch('/users/me/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
 }
 
-export async function updateCover(coverUrl: string): Promise<void> {
-  await http.patch('/users/me/cover', { CoverUrl: coverUrl });
+export async function updateCover(file: File): Promise<void> {
+  const formData = new FormData();
+  formData.append('file', file);
+  await http.patch('/users/me/cover', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
 }

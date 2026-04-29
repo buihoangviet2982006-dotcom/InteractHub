@@ -4,8 +4,8 @@ import { getUserProfile, updateAvatar, updateCover, type UserProfile } from '../
 import { useAuth } from '../contexts/AuthContext';
 import { useFriendships } from '../contexts/FriendshipContext';
 import { PostItem } from '../components/feed/PostItem';
-import { mapBackendPostToFrontend, uploadImage } from '../services/postsApi';
 import { http } from '../services/http';
+import { mapBackendPostToFrontend } from '../services/postsApi';
 import type { Post } from '../types';
 import { Camera, Image as ImageIcon } from 'lucide-react';
 
@@ -19,6 +19,8 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
   const [isUpdatingCover, setIsUpdatingCover] = useState(false);
+
+  const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -48,12 +50,13 @@ export function ProfilePage() {
 
     setIsUpdatingAvatar(true);
     try {
-      const { url } = await uploadImage(file);
-      await updateAvatar(url);
-      setProfile({ ...profile, avatarUrl: url });
-      // 4. Update auth context (if it's current user)
+      await updateAvatar(file);
+      // Refresh profile to get new binary data
+      const updatedProfile = await getUserProfile(userId!);
+      setProfile(updatedProfile);
+      
       if (currentUser && currentUser.id.toString() === userId) {
-        setUser({ ...currentUser, avatarUrl: url });
+        setUser({ ...currentUser, avatarData: updatedProfile.avatarData });
       }
     } catch (error) {
       console.error('Failed to update avatar', error);
@@ -69,9 +72,10 @@ export function ProfilePage() {
 
     setIsUpdatingCover(true);
     try {
-      const { url } = await uploadImage(file);
-      await updateCover(url);
-      setProfile({ ...profile, coverUrl: url });
+      await updateCover(file);
+      // Refresh profile
+      const updatedProfile = await getUserProfile(userId!);
+      setProfile(updatedProfile);
     } catch (error) {
       console.error('Failed to update cover', error);
       alert('Không thể cập nhật ảnh bìa. Vui lòng thử lại.');
@@ -96,12 +100,12 @@ export function ProfilePage() {
       {/* Cover Photo Area */}
       <div 
         className="h-[300px] bg-gradient-to-r from-blue-300 to-blue-500 rounded-b-lg relative group"
-        style={profile.coverUrl ? { backgroundImage: `url(${profile.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+        style={profile.coverData ? { backgroundImage: `url(${profile.coverData})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
       >
         {isSelf && (
           <label className="absolute bottom-4 right-4 bg-white hover:bg-gray-100 text-gray-800 px-4 py-2 rounded-md font-semibold text-sm cursor-pointer transition-colors flex items-center space-x-2 shadow-md z-30">
             <ImageIcon className="w-5 h-5 text-gray-600" />
-            <span>{profile.coverUrl ? 'Thay đổi ảnh bìa' : 'Thêm ảnh bìa'}</span>
+            <span>{profile.coverData ? 'Thay đổi ảnh bìa' : 'Thêm ảnh bìa'}</span>
             <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange} disabled={isUpdatingCover} />
           </label>
         )}
@@ -118,7 +122,7 @@ export function ProfilePage() {
           <div className="flex items-end space-x-6">
             <div className="relative group">
               <img 
-                src={profile.avatarUrl || `https://i.pravatar.cc/150?u=${profile.id}`} 
+                src={profile.avatarData || defaultAvatar} 
                 alt={profile.name}
                 className={`w-[160px] h-[160px] rounded-full border-4 border-white object-cover bg-white ${isUpdatingAvatar ? 'opacity-50' : ''}`}
               />
@@ -175,7 +179,6 @@ export function ProfilePage() {
       {/* Profile Content */}
       <div className="bg-[#f0f2f5] p-4 min-h-[500px]">
         <div className="max-w-[800px] mx-auto space-y-4">
-          {/* Top Section - Intro */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="font-bold text-xl mb-4 text-gray-900 border-b pb-2">Giới thiệu</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600 text-[15px]">
@@ -187,11 +190,9 @@ export function ProfilePage() {
                 <span className="font-semibold text-gray-800">Tham gia:</span>
                 <span>Thành viên mới</span>
               </div>
-              {/* Could add more details here later */}
             </div>
           </div>
 
-          {/* Bottom Section - Posts */}
           <div className="space-y-4">
             <h3 className="font-bold text-xl px-2 text-gray-900">Bài viết</h3>
             {posts.length === 0 ? (

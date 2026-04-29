@@ -69,7 +69,7 @@ public class FriendshipService : IFriendshipService
             {
                 FriendId = friendUser.Id,
                 FriendName = friendUser.FullName ?? string.Empty,
-                FriendAvatarUrl = friendUser.AvatarUrl,
+                FriendAvatarData = friendUser.AvatarData,
                 CreatedAt = f.CreatedAt
             });
         }

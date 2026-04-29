@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { friendsOnline } from '../../data/mockData';
 import { useFriendships } from '../../contexts/FriendshipContext';
 
 export function RightSidebar() {
   const { friends, suggestions, requestSent, sendRequest, loading } = useFriendships();
+  const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
+
   const filteredSuggestions = suggestions.filter(
     (suggestion) => !friends.some((friend) => friend.friendId === suggestion.id),
   );
@@ -11,26 +12,6 @@ export function RightSidebar() {
   return (
     <aside className="w-[300px] h-[calc(100vh-56px)] overflow-y-auto sticky top-14 py-4 px-2 hidden lg:block bg-[#f0f2f5]">
       
-      {/* Friends Online */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <h3 className="text-gray-900 font-semibold mb-3">Bạn bè đang trực tuyến</h3>
-        <ul className="space-y-3">
-          {friendsOnline.map((friend, index) => (
-            <li key={friend.id + index}>
-              <Link to={`/profile/${friend.id}`} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-1 -mx-1 rounded-md transition-colors">
-                <div className="relative">
-                  <img src={friend.avatarUrl} alt={friend.name} className="w-8 h-8 rounded-full" />
-                  {friend.isOnline && (
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-                  )}
-                </div>
-                <span className="font-medium text-gray-700 text-sm">{friend.name}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       {/* Friends List */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
         <h3 className="text-gray-900 font-semibold mb-3">Bạn bè của bạn</h3>
@@ -44,7 +25,7 @@ export function RightSidebar() {
               <li key={friend.friendId}>
                 <Link to={`/profile/${friend.friendId}`} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-1 -mx-1 rounded-md transition-colors">
                   <div className="relative">
-                    <img src={friend.friendAvatarUrl || `https://i.pravatar.cc/150?u=${friend.friendId}`} alt={friend.friendName} className="w-8 h-8 rounded-full" />
+                    <img src={friend.friendAvatarData || defaultAvatar} alt={friend.friendName} className="w-8 h-8 rounded-full object-cover" />
                   </div>
                   <span className="font-medium text-gray-700 text-sm">{friend.friendName}</span>
                 </Link>
@@ -66,7 +47,7 @@ export function RightSidebar() {
               return (
                 <li key={suggestion.id} className="flex items-center justify-between">
                   <Link to={`/profile/${suggestion.id}`} className="flex items-center space-x-3 cursor-pointer hover:underline decoration-blue-500 underline-offset-2">
-                    <img src={suggestion.avatarUrl} alt={suggestion.name} className="w-8 h-8 rounded-full" />
+                    <img src={suggestion.avatarData || defaultAvatar} alt={suggestion.name} className="w-8 h-8 rounded-full object-cover" />
                     <span className="font-medium text-gray-700 text-sm">{suggestion.name}</span>
                   </Link>
                   <button

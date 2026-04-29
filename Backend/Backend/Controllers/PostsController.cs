@@ -41,14 +41,25 @@ public class PostsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreatePost([FromBody] PostCreateDto dto)
+    public async Task<IActionResult> CreatePost([FromForm] PostCreateDto dto, IFormFile? image)
     {
         var userIdString = User.FindFirst("UserId")?.Value;
         if (!int.TryParse(userIdString, out int userId))
             return Unauthorized("Invalid token.");
+
+        byte[]? imageData = null;
+        if (image != null && image.Length > 0)
+        {
+            if (image.Length > 5 * 1024 * 1024)
+                return BadRequest("File size exceeds 5MB limit.");
+            using var ms = new MemoryStream();
+            await image.CopyToAsync(ms);
+            imageData = ms.ToArray();
+        }
+
         try
         {
-            var result = await _postService.CreatePostAsync(userId, dto);
+            var result = await _postService.CreatePostAsync(userId, dto, imageData);
             return CreatedAtAction(nameof(GetPostById), new { id = result.Id }, result);
         }
         catch (Exception ex)
@@ -58,15 +69,25 @@ public class PostsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdatePost(int id, [FromBody] PostUpdateDto dto)
+    public async Task<IActionResult> UpdatePost(int id, [FromForm] PostUpdateDto dto, IFormFile? image)
     {
         var userIdString = User.FindFirst("UserId")?.Value;
         if (!int.TryParse(userIdString, out int userId))
             return Unauthorized("Invalid token.");
 
+        byte[]? imageData = null;
+        if (image != null && image.Length > 0)
+        {
+            if (image.Length > 5 * 1024 * 1024)
+                return BadRequest("File size exceeds 5MB limit.");
+            using var ms = new MemoryStream();
+            await image.CopyToAsync(ms);
+            imageData = ms.ToArray();
+        }
+
         try
         {
-            var updated = await _postService.UpdatePostAsync(id, userId, dto);
+            var updated = await _postService.UpdatePostAsync(id, userId, dto, imageData);
             return Ok(updated);
         }
         catch (UnauthorizedAccessException ex)

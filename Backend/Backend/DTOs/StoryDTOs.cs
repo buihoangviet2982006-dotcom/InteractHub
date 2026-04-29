@@ -13,7 +13,7 @@ public class StoryResponseDto
     public int Id { get; set; }
     public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
-    public string? UserAvatarUrl { get; set; }
+    public byte[]? UserAvatarData { get; set; }
     public string? MediaUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }

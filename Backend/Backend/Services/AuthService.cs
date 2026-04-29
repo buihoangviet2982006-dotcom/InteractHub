@@ -45,7 +45,7 @@ public class AuthService : IAuthService
             UserId = user.Id,
             Email = user.Email ?? string.Empty,
             FullName = user.FullName ?? string.Empty,
-            AvatarUrl = user.AvatarUrl
+            AvatarData = user.AvatarData
         };
     }
 
@@ -66,23 +66,7 @@ public class AuthService : IAuthService
             UserId = user.Id,
             Email = user.Email ?? string.Empty,
             FullName = user.FullName ?? string.Empty,
-            AvatarUrl = user.AvatarUrl
-        };
-    }
-
-    public async Task<AvatarUpdateResponseDto> UpdateAvatarAsync(int userId, AvatarUpdateDto dto)
-    {
-        var user = await _userRepo.GetByIdAsync(userId);
-        if (user == null) throw new Exception("User not found.");
-
-        user.AvatarUrl = dto.AvatarUrl;
-        _userRepo.Update(user);
-        await _userRepo.SaveChangesAsync();
-
-        return new AvatarUpdateResponseDto
-        {
-            UserId = user.Id,
-            AvatarUrl = user.AvatarUrl
+            AvatarData = user.AvatarData
         };
     }
 

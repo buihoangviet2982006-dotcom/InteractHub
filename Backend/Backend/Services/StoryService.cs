@@ -36,7 +36,7 @@ public class StoryService : IStoryService
             Id = story.Id,
             UserId = story.UserId,
             UserFullName = user.FullName ?? string.Empty,
-            UserAvatarUrl = user.AvatarUrl,
+            UserAvatarData = user.AvatarData,
             MediaUrl = story.MediaUrl,
             CreatedAt = story.CreatedAt,
             ExpiresAt = story.ExpiresAt
@@ -51,7 +51,7 @@ public class StoryService : IStoryService
             Id = s.Id,
             UserId = s.UserId,
             UserFullName = s.User?.FullName ?? string.Empty,
-            UserAvatarUrl = s.User?.AvatarUrl,
+            UserAvatarData = s.User?.AvatarData,
             MediaUrl = s.MediaUrl,
             CreatedAt = s.CreatedAt,
             ExpiresAt = s.ExpiresAt

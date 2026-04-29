@@ -10,6 +10,8 @@ export function SearchPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const { friends, requestSent, sendRequest } = useFriendships();
+  
+  const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   useEffect(() => {
     async function fetchResults() {
@@ -47,7 +49,7 @@ export function SearchPage() {
                 <div className="flex items-center space-x-4">
                   <Link to={`/profile/${user.id}`}>
                     <img
-                      src={user.avatarUrl || `https://i.pravatar.cc/150?u=${user.id}`}
+                      src={user.avatarData || defaultAvatar}
                       alt={user.name}
                       className="w-16 h-16 rounded-full object-cover hover:opacity-90 transition-opacity"
                     />

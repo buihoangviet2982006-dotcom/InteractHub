@@ -54,40 +54,44 @@ public class UsersController : ControllerBase
     }
 
     [HttpPatch("me/avatar")]
-    public async Task<IActionResult> UpdateAvatar([FromBody] UpdateAvatarRequest request)
+    public async Task<IActionResult> UpdateAvatar(IFormFile file)
     {
         var userIdString = User.FindFirst("UserId")?.Value;
         if (!int.TryParse(userIdString, out int currentUserId))
             return Unauthorized();
 
-        if (string.IsNullOrEmpty(request.AvatarUrl))
-            return BadRequest("Avatar URL is required.");
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
 
-        await _userService.UpdateAvatarAsync(currentUserId, request.AvatarUrl);
-        return Ok(new { message = "Avatar updated successfully", avatarUrl = request.AvatarUrl });
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest("File size exceeds 5MB limit.");
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var avatarData = ms.ToArray();
+
+        await _userService.UpdateAvatarAsync(currentUserId, avatarData);
+        return Ok(new { message = "Avatar updated successfully" });
     }
 
     [HttpPatch("me/cover")]
-    public async Task<IActionResult> UpdateCover([FromBody] UpdateCoverRequest request)
+    public async Task<IActionResult> UpdateCover(IFormFile file)
     {
         var userIdString = User.FindFirst("UserId")?.Value;
         if (!int.TryParse(userIdString, out int currentUserId))
             return Unauthorized();
 
-        if (string.IsNullOrEmpty(request.CoverUrl))
-            return BadRequest("Cover URL is required.");
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
 
-        await _userService.UpdateCoverAsync(currentUserId, request.CoverUrl);
-        return Ok(new { message = "Cover updated successfully", coverUrl = request.CoverUrl });
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest("File size exceeds 5MB limit.");
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var coverData = ms.ToArray();
+
+        await _userService.UpdateCoverAsync(currentUserId, coverData);
+        return Ok(new { message = "Cover updated successfully" });
     }
-}
-
-public class UpdateAvatarRequest
-{
-    public string AvatarUrl { get; set; } = string.Empty;
-}
-
-public class UpdateCoverRequest
-{
-    public string CoverUrl { get; set; } = string.Empty;
 }

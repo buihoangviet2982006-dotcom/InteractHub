@@ -15,7 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Story> Stories { get; set; }
     public DbSet<PostReport> PostReports { get; set; }
-    public DbSet<AppImage> AppImages { get; set; }
+    // Đã xóa DbSet<AppImage> - ảnh giờ lưu trực tiếp trong User và Post
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,15 +28,16 @@ public class AppDbContext : DbContext
             entity.HasIndex(u => u.Email).IsUnique();
             entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(500);
             entity.Property(u => u.FullName).IsRequired().HasMaxLength(100);
-            entity.Property(u => u.AvatarUrl).HasColumnType("nvarchar(max)");
             entity.Property(u => u.Bio).HasMaxLength(1000);
+            entity.Property(u => u.AvatarData).HasColumnType("varbinary(max)");
+            entity.Property(u => u.CoverData).HasColumnType("varbinary(max)");
         });
 
         // Post configuration
         modelBuilder.Entity<Post>(entity =>
         {
             entity.Property(p => p.Content).HasMaxLength(2000);
-            entity.Property(p => p.ImageUrl).HasMaxLength(500);
+            entity.Property(p => p.ImageData).HasColumnType("varbinary(max)");
             
             entity.HasOne(p => p.User)
                 .WithMany(u => u.Posts)

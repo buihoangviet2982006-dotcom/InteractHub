@@ -1,8 +1,8 @@
 import type { Comment } from '../../types';
-import { currentUser } from '../../data/mockData';
 import { useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { usePosts } from '../../contexts/PostContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -12,6 +12,9 @@ interface CommentSectionProps {
 export function CommentSection({ comments, postId }: CommentSectionProps) {
   const [content, setContent] = useState('');
   const { addComment } = usePosts();
+  const { user } = useAuth();
+  
+  const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   const handleSubmit = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return;
@@ -36,7 +39,7 @@ export function CommentSection({ comments, postId }: CommentSectionProps) {
       <div className="space-y-4 mb-4">
         {comments.map((comment) => (
           <div key={comment.id} className="flex space-x-2">
-            <img src={comment.user.avatarUrl} alt={comment.user.name} className="w-8 h-8 rounded-full mt-1" />
+            <img src={comment.user.avatarData || defaultAvatar} alt={comment.user.name} className="w-8 h-8 rounded-full mt-1 object-cover" />
             <div className="flex-1">
               <div className="bg-gray-100 rounded-2xl px-4 py-2 inline-block">
                 <span className="font-semibold text-sm text-gray-900 block">{comment.user.name}</span>
@@ -54,7 +57,7 @@ export function CommentSection({ comments, postId }: CommentSectionProps) {
 
       {/* Write a comment */}
       <div className="flex space-x-2 items-start mt-4">
-        <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-8 h-8 rounded-full" />
+        <img src={user?.avatarData || defaultAvatar} alt={user?.fullName} className="w-8 h-8 rounded-full object-cover" />
         <div className="flex-1 relative">
           <input
             type="text"

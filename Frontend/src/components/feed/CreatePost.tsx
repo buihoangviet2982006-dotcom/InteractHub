@@ -1,21 +1,19 @@
 import { useState } from 'react';
 import { Image, X } from 'lucide-react';
-import { currentUser } from '../../data/mockData';
 import { usePosts } from '../../contexts/PostContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { uploadImage } from '../../services/postsApi';
 
 export function CreatePost() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [postText, setPostText] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showImageInput, setShowImageInput] = useState(false);
   const { addPost } = usePosts();
   const { user } = useAuth();
-  const displayUser = (user || currentUser) as any;
+  
+  const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,27 +29,19 @@ export function CreatePost() {
   
   const handlePost = async () => {
     const value = postText.trim();
-    if (!value && !selectedFile && !imageUrl) return;
+    if (!value && !selectedFile) return;
 
     setIsUploading(true);
-    let finalImageUrl = imageUrl.trim() || undefined;
-
     try {
-      if (selectedFile) {
-        const uploadRes = await uploadImage(selectedFile);
-        finalImageUrl = uploadRes.url;
-      }
-
-      await addPost(value, finalImageUrl);
+      await addPost(value, selectedFile || undefined);
       setPostText('');
-      setImageUrl('');
       setSelectedFile(null);
       setPreviewUrl(null);
       setShowImageInput(false);
       setIsModalOpen(false);
     } catch (error) {
       console.error('Lỗi khi đăng bài:', error);
-      alert('Có lỗi xảy ra khi tải ảnh lên. Vui lòng thử lại.');
+      alert('Có lỗi xảy ra khi tải bài viết. Vui lòng thử lại.');
     } finally {
       setIsUploading(false);
     }
@@ -62,12 +52,12 @@ export function CreatePost() {
       {/* Trigger Box */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4 relative z-10 w-full">
         <div className="flex space-x-3 mb-3">
-          <img src={displayUser.avatarUrl || 'https://i.pravatar.cc/150?u=a042581f4e29026024d'} alt={displayUser.fullName || displayUser.name} className="w-10 h-10 rounded-full" />
+          <img src={user?.avatarData || defaultAvatar} alt={user?.fullName} className="w-10 h-10 rounded-full object-cover" />
           <div 
             className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 hover:bg-gray-200 transition-colors cursor-pointer flex items-center"
             onClick={() => setIsModalOpen(true)}
           >
-            <span className="text-gray-500">Bạn đang nghĩ gì, {displayUser.fullName || displayUser.name}?</span>
+            <span className="text-gray-500">Bạn đang nghĩ gì, {user?.fullName}?</span>
           </div>
         </div>
         
@@ -103,9 +93,9 @@ export function CreatePost() {
             {/* Modal Body */}
             <div className="p-4 flex flex-col flex-1 sm:h-[400px]">
               <div className="flex items-center space-x-3 mb-4">
-                <img src={displayUser.avatarUrl || 'https://i.pravatar.cc/150?u=a042581f4e29026024d'} alt={displayUser.fullName || displayUser.name} className="w-10 h-10 rounded-full" />
+                <img src={user?.avatarData || defaultAvatar} alt={user?.fullName} className="w-10 h-10 rounded-full object-cover" />
                 <div>
-                  <h3 className="font-semibold text-gray-900 leading-tight">{displayUser.fullName || displayUser.name}</h3>
+                  <h3 className="font-semibold text-gray-900 leading-tight">{user?.fullName}</h3>
                   <div className="bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-0.5 rounded-md mt-1 flex items-center w-max">
                     Bạn bè
                   </div>
@@ -114,7 +104,7 @@ export function CreatePost() {
 
               <textarea
                 className="w-full text-xl sm:text-2xl placeholder-gray-500 outline-none resize-none flex-1 min-h-[120px]"
-                placeholder={`Bạn đang nghĩ gì, ${displayUser.fullName || displayUser.name}?`}
+                placeholder={`Bạn đang nghĩ gì, ${user?.fullName}?`}
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
                 autoFocus
@@ -148,29 +138,11 @@ export function CreatePost() {
                         </label>
                       )}
                     </div>
-                    
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-gray-200"></div>
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-gray-500">Hoặc dán URL</span>
-                      </div>
-                    </div>
-
-                    <input
-                      type="text"
-                      className="w-full p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm"
-                      placeholder="Dán link ảnh vào đây..."
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                    />
                   </div>
                 </div>
               )}
 
               <div className="mt-auto">
-                {/* Add to your post */}
                 <div className="border border-gray-300 rounded-lg p-3 flex items-center justify-between shadow-sm mb-4 mt-2">
                   <span className="font-semibold text-gray-900">Thêm vào bài viết</span>
                   <button 
@@ -181,14 +153,13 @@ export function CreatePost() {
                   </button>
                 </div>
 
-                {/* Post Action */}
                 <button 
                   className={`w-full py-2 rounded-md font-semibold text-base transition-colors ${
-                    (postText.trim().length > 0 || selectedFile || imageUrl) && !isUploading
+                    (postText.trim().length > 0 || selectedFile) && !isUploading
                       ? 'bg-[#1b74e4] hover:bg-blue-600 text-white shadow-sm' 
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
-                  disabled={(postText.trim().length === 0 && !selectedFile && !imageUrl) || isUploading}
+                  disabled={(postText.trim().length === 0 && !selectedFile) || isUploading}
                   onClick={handlePost}
                 >
                   {isUploading ? 'Đang đăng...' : 'Đăng bài'}

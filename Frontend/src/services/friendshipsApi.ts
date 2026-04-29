@@ -1,5 +1,6 @@
 import type { Friendship } from '../types';
 import { http } from './http';
+import { formatImageData } from './postsApi';
 
 export async function sendFriendRequest(receiverId: string): Promise<void> {
   await http.post('/friendships/request', {
@@ -16,7 +17,7 @@ export async function getFriends(userId: string): Promise<Friendship[]> {
   return response.data.map((f) => ({
     friendId: (f.friendId || f.FriendId || '').toString(),
     friendName: f.friendName || f.FriendName,
-    friendAvatarUrl: f.friendAvatarUrl || f.FriendAvatarUrl,
+    friendAvatarData: formatImageData(f.friendAvatarData || f.FriendAvatarData),
     createdAt: f.createdAt || f.CreatedAt,
   }));
 }

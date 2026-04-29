@@ -13,6 +13,6 @@ public class FriendshipResponseDto
 {
     public int FriendId { get; set; }
     public string FriendName { get; set; } = string.Empty;
-    public string? FriendAvatarUrl { get; set; }
+    public byte[]? FriendAvatarData { get; set; }
     public DateTime CreatedAt { get; set; }
 }

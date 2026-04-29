@@ -22,8 +22,8 @@ public class UserService : IUserService
             Id = u.Id,
             FullName = u.FullName,
             Email = u.Email,
-            AvatarUrl = u.AvatarUrl,
-            CoverUrl = u.CoverUrl
+            AvatarData = u.AvatarData,
+            CoverData = u.CoverData
         });
     }
 
@@ -35,8 +35,8 @@ public class UserService : IUserService
             Id = u.Id,
             FullName = u.FullName,
             Email = u.Email,
-            AvatarUrl = u.AvatarUrl,
-            CoverUrl = u.CoverUrl
+            AvatarData = u.AvatarData,
+            CoverData = u.CoverData
         });
     }
 
@@ -59,31 +59,31 @@ public class UserService : IUserService
             Id = user.Id,
             FullName = user.FullName,
             Email = user.Email,
-            AvatarUrl = user.AvatarUrl,
-            CoverUrl = user.CoverUrl,
+            AvatarData = user.AvatarData,
+            CoverData = user.CoverData,
             FriendCount = friends.Count,
             IsFriend = isFriend,
-            RequestSent = false // We can implement request sent tracking if needed, but for now we skip or leave false.
+            RequestSent = false
         };
     }
 
-    public async Task UpdateAvatarAsync(int userId, string avatarUrl)
+    public async Task UpdateAvatarAsync(int userId, byte[] avatarData)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user != null)
         {
-            user.AvatarUrl = avatarUrl;
+            user.AvatarData = avatarData;
             _userRepository.Update(user);
             await _userRepository.SaveChangesAsync();
         }
     }
 
-    public async Task UpdateCoverAsync(int userId, string coverUrl)
+    public async Task UpdateCoverAsync(int userId, byte[] coverData)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user != null)
         {
-            user.CoverUrl = coverUrl;
+            user.CoverData = coverData;
             _userRepository.Update(user);
             await _userRepository.SaveChangesAsync();
         }

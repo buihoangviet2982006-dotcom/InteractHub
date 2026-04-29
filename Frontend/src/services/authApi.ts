@@ -1,5 +1,5 @@
 import { http } from './http';
-import type { LoginDto, RegisterDto, AuthResponseDto, AvatarUpdateDto, AvatarUpdateResponseDto } from '../types/auth';
+import type { LoginDto, RegisterDto, AuthResponseDto } from '../types/auth';
 
 export const authApi = {
   login: async (data: LoginDto): Promise<AuthResponseDto> => {
@@ -9,11 +9,6 @@ export const authApi = {
 
   register: async (data: RegisterDto): Promise<AuthResponseDto> => {
     const response = await http.post<AuthResponseDto>('/auth/register', data);
-    return response.data;
-  },
-
-  updateAvatar: async (data: AvatarUpdateDto): Promise<AvatarUpdateResponseDto> => {
-    const response = await http.put<AvatarUpdateResponseDto>('/auth/avatar', data);
     return response.data;
   },
 };
