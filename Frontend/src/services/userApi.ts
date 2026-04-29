@@ -10,6 +10,7 @@ const formatAvatarUrl = (url?: string) => {
 
 export interface UserProfile extends User {
   email?: string;
+  coverUrl?: string;
   friendCount: number;
   isFriend: boolean;
   requestSent: boolean;
@@ -22,6 +23,7 @@ export async function searchUsers(query: string): Promise<User[]> {
     id: (u.id || u.Id || '').toString(),
     name: u.fullName || u.FullName,
     avatarUrl: formatAvatarUrl(u.avatarUrl || u.AvatarUrl),
+    coverUrl: formatAvatarUrl(u.coverUrl || u.CoverUrl),
   }));
 }
 
@@ -31,6 +33,7 @@ export async function getSuggestions(limit: number = 5): Promise<User[]> {
     id: (u.id || u.Id || '').toString(),
     name: u.fullName || u.FullName,
     avatarUrl: formatAvatarUrl(u.avatarUrl || u.AvatarUrl),
+    coverUrl: formatAvatarUrl(u.coverUrl || u.CoverUrl),
   }));
 }
 
@@ -43,5 +46,14 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     name: data.fullName || data.FullName,
     email: data.email || data.Email,
     avatarUrl: formatAvatarUrl(data.avatarUrl || data.AvatarUrl),
+    coverUrl: formatAvatarUrl(data.coverUrl || data.CoverUrl),
   };
+}
+
+export async function updateAvatar(avatarUrl: string): Promise<void> {
+  await http.patch('/users/me/avatar', { avatarUrl });
+}
+
+export async function updateCover(coverUrl: string): Promise<void> {
+  await http.patch('/users/me/cover', { coverUrl });
 }

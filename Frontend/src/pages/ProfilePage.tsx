@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getUserProfile, type UserProfile } from '../services/userApi';
+import { getUserProfile, updateAvatar, updateCover, type UserProfile } from '../services/userApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useFriendships } from '../contexts/FriendshipContext';
 import { PostItem } from '../components/feed/PostItem';
-import { mapBackendPostToFrontend } from '../services/postsApi';
+import { mapBackendPostToFrontend, uploadImage } from '../services/postsApi';
 import { http } from '../services/http';
 import type { Post } from '../types';
+import { Camera, Image as ImageIcon } from 'lucide-react';
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, login } = useAuth();
   const { sendRequest, requestSent } = useFriendships();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+  const [isUpdatingCover, setIsUpdatingCover] = useState(false);
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -39,6 +42,43 @@ export function ProfilePage() {
     void fetchProfileData();
   }, [userId]);
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    setIsUpdatingAvatar(true);
+    try {
+      const { url } = await uploadImage(file);
+      await updateAvatar(url);
+      setProfile({ ...profile, avatarUrl: url });
+      if (currentUser && currentUser.id.toString() === userId) {
+        login({ ...currentUser, avatarUrl: url } as any, localStorage.getItem('token') || '');
+      }
+    } catch (error) {
+      console.error('Failed to update avatar', error);
+      alert('Không thể cập nhật ảnh đại diện. Vui lòng thử lại.');
+    } finally {
+      setIsUpdatingAvatar(false);
+    }
+  };
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    setIsUpdatingCover(true);
+    try {
+      const { url } = await uploadImage(file);
+      await updateCover(url);
+      setProfile({ ...profile, coverUrl: url });
+    } catch (error) {
+      console.error('Failed to update cover', error);
+      alert('Không thể cập nhật ảnh bìa. Vui lòng thử lại.');
+    } finally {
+      setIsUpdatingCover(false);
+    }
+  };
+
   if (loading) {
     return <div className="max-w-[800px] mx-auto py-10 text-center text-gray-500">Đang tải trang cá nhân...</div>;
   }
@@ -52,19 +92,47 @@ export function ProfilePage() {
 
   return (
     <div className="max-w-[800px] mx-auto bg-white min-h-screen">
-      {/* Cover Photo Area - Placeholder */}
-      <div className="h-[300px] bg-gradient-to-r from-blue-300 to-blue-500 rounded-b-lg relative">
+      {/* Cover Photo Area */}
+      <div 
+        className="h-[300px] bg-gradient-to-r from-blue-300 to-blue-500 rounded-b-lg relative group"
+        style={profile.coverUrl ? { backgroundImage: `url(${profile.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+      >
+        {isSelf && (
+          <label className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-md font-semibold text-sm cursor-pointer transition-colors flex items-center space-x-2 shadow-sm">
+            <ImageIcon className="w-5 h-5" />
+            <span>{profile.coverUrl ? 'Thay đổi ảnh bìa' : 'Thêm ảnh bìa'}</span>
+            <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange} disabled={isUpdatingCover} />
+          </label>
+        )}
+        {isUpdatingCover && (
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded-b-lg">
+            <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
       </div>
 
       {/* Profile Info */}
       <div className="px-8 pb-4 border-b">
         <div className="flex flex-col md:flex-row justify-between items-end md:items-center -mt-[50px] relative z-10 space-y-4 md:space-y-0">
           <div className="flex items-end space-x-6">
-            <img 
-              src={profile.avatarUrl || `https://i.pravatar.cc/150?u=${profile.id}`} 
-              alt={profile.name}
-              className="w-[160px] h-[160px] rounded-full border-4 border-white object-cover bg-white"
-            />
+            <div className="relative group">
+              <img 
+                src={profile.avatarUrl || `https://i.pravatar.cc/150?u=${profile.id}`} 
+                alt={profile.name}
+                className={`w-[160px] h-[160px] rounded-full border-4 border-white object-cover bg-white ${isUpdatingAvatar ? 'opacity-50' : ''}`}
+              />
+              {isSelf && (
+                <label className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                  <Camera className="w-8 h-8 text-white" />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} disabled={isUpdatingAvatar} />
+                </label>
+              )}
+              {isUpdatingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
             <div className="pb-4">
               <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
               <p className="text-gray-500 font-medium mt-1">{profile.friendCount} bạn bè</p>

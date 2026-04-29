@@ -52,4 +52,42 @@ public class UsersController : ControllerBase
 
         return Ok(profile);
     }
+
+    [HttpPatch("me/avatar")]
+    public async Task<IActionResult> UpdateAvatar([FromBody] UpdateAvatarRequest request)
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int currentUserId))
+            return Unauthorized();
+
+        if (string.IsNullOrEmpty(request.AvatarUrl))
+            return BadRequest("Avatar URL is required.");
+
+        await _userService.UpdateAvatarAsync(currentUserId, request.AvatarUrl);
+        return Ok(new { message = "Avatar updated successfully", avatarUrl = request.AvatarUrl });
+    }
+
+    [HttpPatch("me/cover")]
+    public async Task<IActionResult> UpdateCover([FromBody] UpdateCoverRequest request)
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int currentUserId))
+            return Unauthorized();
+
+        if (string.IsNullOrEmpty(request.CoverUrl))
+            return BadRequest("Cover URL is required.");
+
+        await _userService.UpdateCoverAsync(currentUserId, request.CoverUrl);
+        return Ok(new { message = "Cover updated successfully", coverUrl = request.CoverUrl });
+    }
+}
+
+public class UpdateAvatarRequest
+{
+    public string AvatarUrl { get; set; } = string.Empty;
+}
+
+public class UpdateCoverRequest
+{
+    public string CoverUrl { get; set; } = string.Empty;
 }

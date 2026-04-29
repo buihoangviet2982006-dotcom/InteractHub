@@ -6,6 +6,7 @@ public class UserDto
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? AvatarUrl { get; set; }
+    public string? CoverUrl { get; set; }
 }
 
 public class UserProfileDto : UserDto

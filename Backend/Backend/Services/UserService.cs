@@ -22,7 +22,8 @@ public class UserService : IUserService
             Id = u.Id,
             FullName = u.FullName,
             Email = u.Email,
-            AvatarUrl = u.AvatarUrl
+            AvatarUrl = u.AvatarUrl,
+            CoverUrl = u.CoverUrl
         });
     }
 
@@ -34,7 +35,8 @@ public class UserService : IUserService
             Id = u.Id,
             FullName = u.FullName,
             Email = u.Email,
-            AvatarUrl = u.AvatarUrl
+            AvatarUrl = u.AvatarUrl,
+            CoverUrl = u.CoverUrl
         });
     }
 
@@ -58,9 +60,32 @@ public class UserService : IUserService
             FullName = user.FullName,
             Email = user.Email,
             AvatarUrl = user.AvatarUrl,
+            CoverUrl = user.CoverUrl,
             FriendCount = friends.Count,
             IsFriend = isFriend,
             RequestSent = false // We can implement request sent tracking if needed, but for now we skip or leave false.
         };
+    }
+
+    public async Task UpdateAvatarAsync(int userId, string avatarUrl)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user != null)
+        {
+            user.AvatarUrl = avatarUrl;
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
+        }
+    }
+
+    public async Task UpdateCoverAsync(int userId, string coverUrl)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user != null)
+        {
+            user.CoverUrl = coverUrl;
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
+        }
     }
 }

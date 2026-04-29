@@ -7,6 +7,7 @@ public class User : Entity
     public string? PasswordHash{get;set;}
     public string? FullName { get; set; }
     public string? AvatarUrl { get; set; }
+    public string? CoverUrl { get; set; }
     public string? Bio { get; set; }
     public string Role { get; set; } = "User";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
