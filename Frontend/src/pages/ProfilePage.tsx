@@ -31,7 +31,7 @@ export function ProfilePage() {
         ]);
         setProfile(profileData);
         
-        const rawItems = postsResponse.data.items || [];
+        const rawItems = postsResponse.data.items || postsResponse.data.Items || [];
         setPosts(rawItems.map(mapBackendPostToFrontend));
       } catch (error) {
         console.error('Error fetching profile', error);

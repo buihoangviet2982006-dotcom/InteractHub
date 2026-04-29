@@ -33,22 +33,25 @@ const mapBackendCommentToFrontend = (c: any): Comment => ({
   timestamp: formatTimestamp(c.createdAt || c.CreatedAt),
 });
 
-export const mapBackendPostToFrontend = (p: any): Post => ({
-  id: (p.id || p.Id || '').toString(),
-  userId: (p.userId || p.UserId || '').toString(),
-  user: {
-    id: (p.userId || p.UserId || '').toString(),
-    name: p.userFullName || p.UserFullName,
-    avatarUrl: (p.userAvatarUrl || p.UserAvatarUrl) || 'https://i.pravatar.cc/150?u=' + (p.userId || p.UserId),
-  },
-  content: p.content || p.Content,
-  imageUrl: p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : API_ROOT + p.imageUrl) : undefined,
-  timestamp: formatTimestamp(p.createdAt || p.CreatedAt),
-  likes: p.likeCount || p.LikeCount || 0,
-  shares: 0, // Backend chưa hỗ trợ
-  comments: [], // Backend trả về CommentCount thay vì mảng comment ở feed
-  isLiked: p.isLiked || p.IsLiked || false,
-});
+export const mapBackendPostToFrontend = (p: any): Post => {
+  const imageUrl = p.imageUrl || p.ImageUrl;
+  return {
+    id: (p.id || p.Id || '').toString(),
+    userId: (p.userId || p.UserId || '').toString(),
+    user: {
+      id: (p.userId || p.UserId || '').toString(),
+      name: p.userFullName || p.UserFullName,
+      avatarUrl: (p.userAvatarUrl || p.UserAvatarUrl) || 'https://i.pravatar.cc/150?u=' + (p.userId || p.UserId),
+    },
+    content: p.content || p.Content,
+    imageUrl: imageUrl ? (imageUrl.startsWith('http') ? imageUrl : API_ROOT + imageUrl) : undefined,
+    timestamp: formatTimestamp(p.createdAt || p.CreatedAt),
+    likes: p.likeCount || p.LikeCount || 0,
+    shares: 0,
+    comments: [],
+    isLiked: p.isLiked || p.IsLiked || false,
+  };
+};
 
 export interface PaginatedPosts {
   items: Post[];
@@ -62,12 +65,15 @@ export async function fetchPosts(cursorId?: number, limit = 5): Promise<Paginate
       params: { cursorId, limit },
     });
     
-    const { items, nextCursorId, hasNextPage } = response.data;
+    const data = response.data;
+    const items = data.items || data.Items || [];
+    const nextCursorId = data.nextCursorId ?? data.NextCursorId ?? null;
+    const hasNextPage = data.hasNextPage ?? data.HasNextPage ?? false;
     
     return {
       items: Array.isArray(items) ? items.map(mapBackendPostToFrontend) : [],
-      nextCursorId: nextCursorId || null,
-      hasNextPage: hasNextPage || false,
+      nextCursorId: nextCursorId,
+      hasNextPage: hasNextPage,
     };
   } catch (error) {
     console.error('Lỗi khi tải bài viết:', error);
