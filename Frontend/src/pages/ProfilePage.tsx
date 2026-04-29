@@ -11,7 +11,7 @@ import { Camera, Image as ImageIcon } from 'lucide-react';
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
-  const { user: currentUser, login } = useAuth();
+  const { user: currentUser, setUser } = useAuth();
   const { sendRequest, requestSent } = useFriendships();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -51,8 +51,9 @@ export function ProfilePage() {
       const { url } = await uploadImage(file);
       await updateAvatar(url);
       setProfile({ ...profile, avatarUrl: url });
+      // 4. Update auth context (if it's current user)
       if (currentUser && currentUser.id.toString() === userId) {
-        login({ ...currentUser, avatarUrl: url } as any, localStorage.getItem('token') || '');
+        setUser({ ...currentUser, avatarUrl: url });
       }
     } catch (error) {
       console.error('Failed to update avatar', error);
@@ -87,7 +88,7 @@ export function ProfilePage() {
     return <div className="max-w-[800px] mx-auto py-10 text-center text-gray-500">Người dùng không tồn tại.</div>;
   }
 
-  const isSelf = currentUser?.id.toString() === userId;
+  const isSelf = currentUser && (currentUser.id.toString() === userId || currentUser.id === Number(userId));
   const isSent = requestSent.includes(profile.id);
 
   return (
@@ -98,8 +99,8 @@ export function ProfilePage() {
         style={profile.coverUrl ? { backgroundImage: `url(${profile.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
       >
         {isSelf && (
-          <label className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-md font-semibold text-sm cursor-pointer transition-colors flex items-center space-x-2 shadow-sm">
-            <ImageIcon className="w-5 h-5" />
+          <label className="absolute bottom-4 right-4 bg-white hover:bg-gray-100 text-gray-800 px-4 py-2 rounded-md font-semibold text-sm cursor-pointer transition-colors flex items-center space-x-2 shadow-md z-30">
+            <ImageIcon className="w-5 h-5 text-gray-600" />
             <span>{profile.coverUrl ? 'Thay đổi ảnh bìa' : 'Thêm ảnh bìa'}</span>
             <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange} disabled={isUpdatingCover} />
           </label>
@@ -122,14 +123,17 @@ export function ProfilePage() {
                 className={`w-[160px] h-[160px] rounded-full border-4 border-white object-cover bg-white ${isUpdatingAvatar ? 'opacity-50' : ''}`}
               />
               {isSelf && (
-                <label className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                  <Camera className="w-8 h-8 text-white" />
+                <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity z-30">
+                  <div className="flex flex-col items-center">
+                    <Camera className="w-8 h-8 text-white" />
+                    <span className="text-white text-xs font-semibold mt-1">Thay đổi</span>
+                  </div>
                   <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} disabled={isUpdatingAvatar} />
                 </label>
               )}
               {isUpdatingAvatar && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center z-40 bg-white/40 rounded-full">
+                  <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
             </div>

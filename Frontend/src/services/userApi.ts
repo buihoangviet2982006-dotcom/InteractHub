@@ -51,9 +51,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
 }
 
 export async function updateAvatar(avatarUrl: string): Promise<void> {
-  await http.patch('/users/me/avatar', { avatarUrl });
+  await http.patch('/users/me/avatar', { AvatarUrl: avatarUrl });
 }
 
 export async function updateCover(coverUrl: string): Promise<void> {
-  await http.patch('/users/me/cover', { coverUrl });
+  await http.patch('/users/me/cover', { CoverUrl: coverUrl });
 }

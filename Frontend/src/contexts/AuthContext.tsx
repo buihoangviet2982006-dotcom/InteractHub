@@ -10,6 +10,7 @@ interface AuthContextValue {
   login: (data: LoginDto) => Promise<void>;
   register: (data: RegisterDto) => Promise<void>;
   updateAvatar: (avatarUrl: string) => Promise<void>;
+  setUser: (user: User) => void;
   logout: () => void;
 }
 
@@ -90,6 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const updatedUser = { ...user, avatarUrl: res.avatarUrl ?? user.avatarUrl };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         setUser(updatedUser);
+      },
+      setUser: (userData: User) => {
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
       },
       logout: () => {
         localStorage.removeItem('token');
