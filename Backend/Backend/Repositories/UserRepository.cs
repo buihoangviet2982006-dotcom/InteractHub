@@ -30,7 +30,7 @@ public class UserRepository : Repository<User>, IUserRepository
 
         var lowerQuery = query.ToLower();
         return await _dbSet
-            .Where(u => u.FullName.ToLower().Contains(lowerQuery) || u.Email.ToLower().Contains(lowerQuery))
+            .Where(u => u.FullName!.ToLower().Contains(lowerQuery) || u.Email!.ToLower().Contains(lowerQuery))
             .Take(20)
             .ToListAsync();
     }

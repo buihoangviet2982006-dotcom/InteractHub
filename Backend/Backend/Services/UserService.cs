@@ -20,8 +20,8 @@ public class UserService : IUserService
         return users.Select(u => new UserDto
         {
             Id = u.Id,
-            FullName = u.FullName,
-            Email = u.Email,
+            FullName = u.FullName!,
+            Email = u.Email!,
             AvatarData = u.AvatarData,
             CoverData = u.CoverData
         });
@@ -33,8 +33,8 @@ public class UserService : IUserService
         return users.Select(u => new UserDto
         {
             Id = u.Id,
-            FullName = u.FullName,
-            Email = u.Email,
+            FullName = u.FullName!,
+            Email = u.Email!,
             AvatarData = u.AvatarData,
             CoverData = u.CoverData
         });
@@ -57,8 +57,8 @@ public class UserService : IUserService
         return new UserProfileDto
         {
             Id = user.Id,
-            FullName = user.FullName,
-            Email = user.Email,
+            FullName = user.FullName!,
+            Email = user.Email!,
             AvatarData = user.AvatarData,
             CoverData = user.CoverData,
             FriendCount = friends.Count,
