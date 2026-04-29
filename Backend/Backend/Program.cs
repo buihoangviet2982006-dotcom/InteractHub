@@ -88,6 +88,7 @@ builder.Services.AddScoped<Backend.Services.IStoryService, Backend.Services.Stor
 builder.Services.AddScoped<Backend.Services.IPostReportService, Backend.Services.PostReportService>();
 builder.Services.AddScoped<Backend.Services.IAuthService, Backend.Services.AuthService>();
 builder.Services.AddScoped<Backend.Services.INotificationService, Backend.Services.NotificationService>();
+builder.Services.AddScoped<Backend.Services.IUserService, Backend.Services.UserService>();
 
 // Cấu hình SignalR
 builder.Services.AddSignalR();

@@ -1,4 +1,4 @@
-import { Search, Bell, MessageCircle } from 'lucide-react';
+import { Search, Bell, MessageCircle, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
@@ -45,17 +45,23 @@ export function Navbar() {
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="block w-full pl-9 pr-3 py-1.5 border border-transparent rounded-full leading-5 bg-[#f0f2f5] placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-300 sm:text-sm transition-all"
-            placeholder="Tìm bài viết..."
-          />
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (search.trim()) {
+              navigate(`/search?q=${encodeURIComponent(search.trim())}`);
+            }
+          }}>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="block w-full pl-9 pr-3 py-1.5 border border-transparent rounded-full leading-5 bg-[#f0f2f5] placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-300 sm:text-sm transition-all"
+              placeholder="Tìm kiếm người dùng..."
+            />
+          </form>
         </div>
       </div>
 
-      {/* Right Actions */}
       <div className="flex-shrink-0 flex items-center justify-end space-x-2 sm:space-x-4 w-1/4">
         <button className="text-white hover:bg-white/10 p-2 rounded-full transition-colors">
           <Bell className="h-6 w-6" />
@@ -63,13 +69,26 @@ export function Navbar() {
         <button className="text-white hover:bg-white/10 p-2 rounded-full transition-colors">
           <MessageCircle className="h-6 w-6" />
         </button>
-        <button type="button" className="flex focus:outline-none" onClick={() => setShowAvatarModal(true)}>
+        <button 
+          type="button" 
+          className="flex items-center space-x-2 focus:outline-none hover:bg-white/10 px-2 py-1 rounded-full transition-colors"
+          onClick={() => user && navigate(`/profile/${user.id}`)}
+        >
           <img
-            className="h-9 w-9 rounded-full object-cover border-2 border-transparent hover:border-white transition-colors"
+            className="h-8 w-8 rounded-full object-cover border border-white/20"
             src={displayUser.avatarUrl || 'https://i.pravatar.cc/150?u=a042581f4e29026024d'}
             alt={displayUser.name}
             loading="lazy"
           />
+          <span className="text-white text-sm font-medium hidden md:block">{displayUser.name}</span>
+        </button>
+        <button
+          type="button"
+          className="text-white hover:bg-white/10 p-2 rounded-full transition-colors"
+          onClick={() => setShowAvatarModal(true)}
+          title="Cập nhật ảnh đại diện"
+        >
+          <Settings className="h-5 w-5" />
         </button>
         <button
           className="text-xs text-white border border-white/40 rounded-md px-2 py-1 hover:bg-white/10"

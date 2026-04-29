@@ -13,10 +13,10 @@ export async function deleteFriendship(targetUserId: string): Promise<void> {
 
 export async function getFriends(userId: string): Promise<Friendship[]> {
   const response = await http.get<any[]>(`/friendships/${userId}`);
-  return response.data.map((friendship) => ({
-    friendId: friendship.friendId.toString(),
-    friendName: friendship.friendName,
-    friendAvatarUrl: friendship.friendAvatarUrl,
-    createdAt: friendship.createdAt,
+  return response.data.map((f) => ({
+    friendId: (f.friendId || f.FriendId || '').toString(),
+    friendName: f.friendName || f.FriendName,
+    friendAvatarUrl: f.friendAvatarUrl || f.FriendAvatarUrl,
+    createdAt: f.createdAt || f.CreatedAt,
   }));
 }

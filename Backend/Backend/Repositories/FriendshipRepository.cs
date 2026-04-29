@@ -23,6 +23,7 @@ public class FriendshipRepository : Repository<Friendship>, IFriendshipRepositor
             .Include(f => f.Requestor)
             .Include(f => f.Receiver)
             .Where(f => f.RequestorId == userId || f.ReceiverId == userId)
+            .AsSplitQuery()
             .ToListAsync();
     }
 }

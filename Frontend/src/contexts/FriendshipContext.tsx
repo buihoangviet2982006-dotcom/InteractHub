@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { Friendship, User } from '../types';
-import { suggestions as mockSuggestions } from '../data/mockData';
 import { useAuth } from './AuthContext';
 import { deleteFriendship, getFriends, sendFriendRequest } from '../services/friendshipsApi';
+import { getSuggestions } from '../services/userApi';
 
 interface FriendshipContextValue {
   friends: Friendship[];
@@ -14,6 +14,7 @@ interface FriendshipContextValue {
   sendRequest: (receiverId: string) => Promise<void>;
   removeFriend: (targetUserId: string) => Promise<void>;
   refreshFriends: () => Promise<void>;
+  loadSuggestions: () => Promise<void>;
 }
 
 const FriendshipContext = createContext<FriendshipContextValue | undefined>(undefined);
@@ -21,11 +22,12 @@ const FriendshipContext = createContext<FriendshipContextValue | undefined>(unde
 export function FriendshipProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const [friends, setFriends] = useState<Friendship[]>([]);
+  const [suggestions, setSuggestions] = useState<User[]>([]);
   const [requestSent, setRequestSent] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadFriends = async () => {
+  const loadFriends = useCallback(async () => {
     if (!user || !isAuthenticated) {
       setFriends([]);
       return;
@@ -41,15 +43,29 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, isAuthenticated]);
+
+  const loadSuggestions = useCallback(async () => {
+    if (!user || !isAuthenticated) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const data = await getSuggestions(5);
+      setSuggestions(data);
+    } catch (err) {
+      console.error('Không thể tải gợi ý', err);
+    }
+  }, [user, isAuthenticated]);
 
   useEffect(() => {
     void loadFriends();
-  }, [user, isAuthenticated]);
+    void loadSuggestions();
+  }, [loadFriends, loadSuggestions]);
 
   const value = useMemo<FriendshipContextValue>(() => ({
     friends,
-    suggestions: mockSuggestions,
+    suggestions,
     requestSent,
     loading,
     error,
@@ -57,6 +73,10 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
       try {
         await sendFriendRequest(receiverId);
         setRequestSent((prev) => [...prev, receiverId]);
+        // Also refresh friends or let backend decide. But for now, just mark request sent.
+        // If it's auto-accept, we can fetch friends again.
+        void loadFriends();
+        void loadSuggestions(); // Refresh suggestions since they might have changed
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Không thể gửi lời mời kết bạn');
         throw err;
@@ -67,7 +87,8 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
       setFriends((prev) => prev.filter((friend) => friend.friendId !== targetUserId));
     },
     refreshFriends: loadFriends,
-  }), [friends, loading, error, requestSent, user, isAuthenticated]);
+    loadSuggestions
+  }), [friends, suggestions, loading, error, requestSent, loadFriends, loadSuggestions]);
 
   return <FriendshipContext.Provider value={value}>{children}</FriendshipContext.Provider>;
 }

@@ -8,6 +8,7 @@ namespace Backend.Services;
 public interface IPostService
 {
     Task<CursorPagedResult<PostResponseDto>> GetPostsAsync(CursorPaginationDto pagination);
+    Task<CursorPagedResult<PostResponseDto>> GetPostsByUserAsync(int userId, CursorPaginationDto pagination);
     Task<PostResponseDto?> GetPostByIdAsync(int id);
     Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto);
     Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto);
@@ -28,6 +29,40 @@ public class PostService : IPostService
     public async Task<CursorPagedResult<PostResponseDto>> GetPostsAsync(CursorPaginationDto pagination)
     {
         var posts = await _postRepo.GetPostsWithPaginationAsync(pagination.Limit, pagination.CursorId);
+        
+        bool hasNextPage = posts.Count > pagination.Limit;
+        if (hasNextPage)
+        {
+            posts.RemoveAt(pagination.Limit);
+        }
+
+        var nextCursor = posts.LastOrDefault()?.Id;
+
+        var items = posts.Select(p => new PostResponseDto
+        {
+            Id = p.Id,
+            UserId = p.UserId,
+            UserFullName = p.User?.FullName ?? "Unknown",
+            UserAvatarUrl = p.User?.AvatarUrl,
+            Content = p.Content ?? string.Empty,
+            ImageUrl = p.ImageUrl,
+            CreatedAt = p.CreatedAt,
+            LikeCount = p.Likes.Count,
+            CommentCount = p.Comments.Count,
+            Hashtags = p.Hashtags.Select(h => h.Name!).ToList()
+        }).ToList();
+
+        return new CursorPagedResult<PostResponseDto>
+        {
+            Items = items,
+            HasNextPage = hasNextPage,
+            NextCursorId = nextCursor
+        };
+    }
+
+    public async Task<CursorPagedResult<PostResponseDto>> GetPostsByUserAsync(int userId, CursorPaginationDto pagination)
+    {
+        var posts = await _postRepo.GetPostsByUserIdWithPaginationAsync(userId, pagination.Limit, pagination.CursorId);
         
         bool hasNextPage = posts.Count > pagination.Limit;
         if (hasNextPage)

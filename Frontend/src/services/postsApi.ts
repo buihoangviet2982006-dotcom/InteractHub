@@ -1,6 +1,8 @@
 import type { Comment, Post } from '../types';
 import { posts as mockPosts, currentUser } from '../data/mockData';
-import { http } from './http';
+import { http, baseURL } from './http';
+
+const API_ROOT = baseURL.replace('/api', '');
 
 const localPosts: Post[] = JSON.parse(JSON.stringify(mockPosts)) as Post[];
 
@@ -20,32 +22,32 @@ const formatTimestamp = (dateString: string) => {
 const getCurrentTimestamp = () => new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
 const mapBackendCommentToFrontend = (c: any): Comment => ({
-  id: c.id.toString(),
-  userId: c.userId.toString(),
+  id: (c.id || c.Id || '').toString(),
+  userId: (c.userId || c.UserId || '').toString(),
   user: {
-    id: c.userId.toString(),
-    name: c.userFullName,
-    avatarUrl: c.userAvatarUrl || `https://i.pravatar.cc/150?u=${c.userId}`,
+    id: (c.userId || c.UserId || '').toString(),
+    name: c.userFullName || c.UserFullName,
+    avatarUrl: (c.userAvatarUrl || c.UserAvatarUrl) || `https://i.pravatar.cc/150?u=${c.userId || c.UserId}`,
   },
-  content: c.content,
-  timestamp: formatTimestamp(c.createdAt),
+  content: c.content || c.Content,
+  timestamp: formatTimestamp(c.createdAt || c.CreatedAt),
 });
 
-const mapBackendPostToFrontend = (p: any): Post => ({
-  id: p.id.toString(),
-  userId: p.userId.toString(),
+export const mapBackendPostToFrontend = (p: any): Post => ({
+  id: (p.id || p.Id || '').toString(),
+  userId: (p.userId || p.UserId || '').toString(),
   user: {
-    id: p.userId.toString(),
-    name: p.userFullName,
-    avatarUrl: p.userAvatarUrl || 'https://i.pravatar.cc/150?u=' + p.userId,
+    id: (p.userId || p.UserId || '').toString(),
+    name: p.userFullName || p.UserFullName,
+    avatarUrl: (p.userAvatarUrl || p.UserAvatarUrl) || 'https://i.pravatar.cc/150?u=' + (p.userId || p.UserId),
   },
-  content: p.content,
-  imageUrl: p.imageUrl,
-  timestamp: formatTimestamp(p.createdAt),
-  likes: p.likeCount,
+  content: p.content || p.Content,
+  imageUrl: p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : API_ROOT + p.imageUrl) : undefined,
+  timestamp: formatTimestamp(p.createdAt || p.CreatedAt),
+  likes: p.likeCount || p.LikeCount || 0,
   shares: 0, // Backend chưa hỗ trợ
   comments: [], // Backend trả về CommentCount thay vì mảng comment ở feed
-  isLiked: false, // Cần API riêng để check hoặc gán từ backend
+  isLiked: p.isLiked || p.IsLiked || false,
 });
 
 export interface PaginatedPosts {
@@ -178,4 +180,20 @@ export async function createPost(content: string, imageUrl?: string): Promise<Po
     localPosts.unshift(newPost);
     return newPost;
   }
+}
+
+export async function uploadImage(file: File): Promise<{ id: number; url: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await http.post<{ id: number; url: string }>('/images', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  
+  return {
+    ...response.data,
+    url: API_ROOT + response.data.url
+  };
 }

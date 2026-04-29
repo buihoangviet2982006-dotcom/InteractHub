@@ -25,6 +25,13 @@ public class PostsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetPostsByUser(int userId, [FromQuery] CursorPaginationDto pagination)
+    {
+        var result = await _postService.GetPostsByUserAsync(userId, pagination);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPostById(int id)
     {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ThumbsUp, MessageSquare, Share2, MoreHorizontal, Trash2, Edit3, X } from 'lucide-react';
 import type { Post } from '../../types';
 import { CommentSection } from './CommentSection';
@@ -38,10 +39,14 @@ export function PostItem({ post }: PostItemProps) {
       {/* Post Header */}
       <div className="relative p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <img src={post.user.avatarUrl} alt={post.user.name} className="w-10 h-10 rounded-full" loading="lazy" />
+          <Link to={`/profile/${post.userId}`}>
+            <img src={post.user.avatarUrl} alt={post.user.name} className="w-10 h-10 rounded-full hover:opacity-90 transition-opacity" loading="lazy" />
+          </Link>
           <div>
-            <h4 className="font-semibold text-gray-900 leading-tight">{post.user.name}</h4>
-            <span className="text-sm text-gray-500 leading-none">{post.timestamp}</span>
+            <Link to={`/profile/${post.userId}`} className="font-semibold text-gray-900 leading-tight hover:underline">
+              {post.user.name}
+            </Link>
+            <div className="text-sm text-gray-500 leading-none mt-0.5">{post.timestamp}</div>
           </div>
         </div>
         <div className="flex items-center space-x-2">

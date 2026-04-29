@@ -1,8 +1,9 @@
-import { friendsOnline, suggestions } from '../../data/mockData';
+import { Link } from 'react-router-dom';
+import { friendsOnline } from '../../data/mockData';
 import { useFriendships } from '../../contexts/FriendshipContext';
 
 export function RightSidebar() {
-  const { friends, requestSent, sendRequest, loading } = useFriendships();
+  const { friends, suggestions, requestSent, sendRequest, loading } = useFriendships();
   const filteredSuggestions = suggestions.filter(
     (suggestion) => !friends.some((friend) => friend.friendId === suggestion.id),
   );
@@ -15,14 +16,16 @@ export function RightSidebar() {
         <h3 className="text-gray-900 font-semibold mb-3">Bạn bè đang trực tuyến</h3>
         <ul className="space-y-3">
           {friendsOnline.map((friend, index) => (
-            <li key={friend.id + index} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-1 -mx-1 rounded-md transition-colors">
-              <div className="relative">
-                <img src={friend.avatarUrl} alt={friend.name} className="w-8 h-8 rounded-full" />
-                {friend.isOnline && (
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-                )}
-              </div>
-              <span className="font-medium text-gray-700 text-sm">{friend.name}</span>
+            <li key={friend.id + index}>
+              <Link to={`/profile/${friend.id}`} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-1 -mx-1 rounded-md transition-colors">
+                <div className="relative">
+                  <img src={friend.avatarUrl} alt={friend.name} className="w-8 h-8 rounded-full" />
+                  {friend.isOnline && (
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                  )}
+                </div>
+                <span className="font-medium text-gray-700 text-sm">{friend.name}</span>
+              </Link>
             </li>
           ))}
         </ul>
@@ -38,11 +41,13 @@ export function RightSidebar() {
         ) : (
           <ul className="space-y-3">
             {friends.map((friend) => (
-              <li key={friend.friendId} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-1 -mx-1 rounded-md transition-colors">
-                <div className="relative">
-                  <img src={friend.friendAvatarUrl || `https://i.pravatar.cc/150?u=${friend.friendId}`} alt={friend.friendName} className="w-8 h-8 rounded-full" />
-                </div>
-                <span className="font-medium text-gray-700 text-sm">{friend.friendName}</span>
+              <li key={friend.friendId}>
+                <Link to={`/profile/${friend.friendId}`} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-1 -mx-1 rounded-md transition-colors">
+                  <div className="relative">
+                    <img src={friend.friendAvatarUrl || `https://i.pravatar.cc/150?u=${friend.friendId}`} alt={friend.friendName} className="w-8 h-8 rounded-full" />
+                  </div>
+                  <span className="font-medium text-gray-700 text-sm">{friend.friendName}</span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -60,10 +65,10 @@ export function RightSidebar() {
               const isSent = requestSent.includes(suggestion.id);
               return (
                 <li key={suggestion.id} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3 cursor-pointer">
+                  <Link to={`/profile/${suggestion.id}`} className="flex items-center space-x-3 cursor-pointer hover:underline decoration-blue-500 underline-offset-2">
                     <img src={suggestion.avatarUrl} alt={suggestion.name} className="w-8 h-8 rounded-full" />
                     <span className="font-medium text-gray-700 text-sm">{suggestion.name}</span>
-                  </div>
+                  </Link>
                   <button
                     type="button"
                     onClick={async () => {

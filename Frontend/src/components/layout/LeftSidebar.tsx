@@ -20,10 +20,10 @@ export function LeftSidebar() {
       <div className="bg-white rounded-lg shadow-sm p-4 h-full">
         <ul className="space-y-1 content-start">
           <li>
-            <a href="#" className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors">
+            <NavLink to={user ? `/profile/${user.id}` : '#'} className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors">
               <img src={displayUser.avatarUrl || 'https://i.pravatar.cc/150?u=a042581f4e29026024d'} alt={displayUser.name} className="w-8 h-8 rounded-full" />
               <span className="font-medium text-gray-900">{displayUser.name}</span>
-            </a>
+            </NavLink>
           </li>
           <li>
             <NavLink to="/" className="flex items-center space-x-3 p-3 rounded-md bg-blue-50 text-blue-600 font-medium">

@@ -28,6 +28,18 @@ const HashtagPage = lazy(() =>
   })),
 );
 
+const ProfilePage = lazy(() =>
+  import('./pages/ProfilePage').then((module) => ({
+    default: module.ProfilePage,
+  })),
+);
+
+const SearchPage = lazy(() =>
+  import('./pages/SearchPage').then((module) => ({
+    default: module.SearchPage,
+  })),
+);
+
 function App() {
   return (
     <Suspense fallback={<div className="p-6 text-gray-600">Đang tải trang...</div>}>
@@ -38,6 +50,8 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<FeedPage />} />
             <Route path="/hashtags" element={<HashtagPage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route path="/search" element={<SearchPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

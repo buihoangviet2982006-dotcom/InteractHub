@@ -7,6 +7,7 @@ namespace Backend.Repositories;
 public interface IPostRepository : IRepository<Post>
 {
     Task<List<Post>> GetPostsWithPaginationAsync(int limit, int? cursorId);
+    Task<List<Post>> GetPostsByUserIdWithPaginationAsync(int userId, int limit, int? cursorId);
     Task<Post?> GetPostWithDetailsAsync(int id);
 }
 
@@ -23,6 +24,26 @@ public class PostRepository : Repository<Post>, IPostRepository
             .Include(p => p.Likes)
             .Include(p => p.Comments)
             .Include(p => p.Hashtags)
+            .AsNoTracking()
+            .OrderByDescending(p => p.Id)
+            .AsQueryable();
+
+        if (cursorId.HasValue)
+        {
+            query = query.Where(p => p.Id < cursorId.Value);
+        }
+
+        return await query.Take(limit + 1).ToListAsync();
+    }
+
+    public async Task<List<Post>> GetPostsByUserIdWithPaginationAsync(int userId, int limit, int? cursorId)
+    {
+        var query = _dbSet
+            .Include(p => p.User)
+            .Include(p => p.Likes)
+            .Include(p => p.Comments)
+            .Include(p => p.Hashtags)
+            .Where(p => p.UserId == userId)
             .AsNoTracking()
             .OrderByDescending(p => p.Id)
             .AsQueryable();

@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Story> Stories { get; set; }
     public DbSet<PostReport> PostReports { get; set; }
+    public DbSet<AppImage> AppImages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

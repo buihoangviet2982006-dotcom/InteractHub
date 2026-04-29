@@ -3,24 +3,58 @@ import { Image, X } from 'lucide-react';
 import { currentUser } from '../../data/mockData';
 import { usePosts } from '../../contexts/PostContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { uploadImage } from '../../services/postsApi';
 
 export function CreatePost() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [postText, setPostText] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [showImageInput, setShowImageInput] = useState(false);
   const { addPost } = usePosts();
   const { user } = useAuth();
   const displayUser = (user || currentUser) as any;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   
   const handlePost = async () => {
     const value = postText.trim();
-    if (!value) return;
-    await addPost(value, imageUrl.trim() || undefined);
-    setPostText('');
-    setImageUrl('');
-    setShowImageInput(false);
-    setIsModalOpen(false);
+    if (!value && !selectedFile && !imageUrl) return;
+
+    setIsUploading(true);
+    let finalImageUrl = imageUrl.trim() || undefined;
+
+    try {
+      if (selectedFile) {
+        const uploadRes = await uploadImage(selectedFile);
+        finalImageUrl = uploadRes.url;
+      }
+
+      await addPost(value, finalImageUrl);
+      setPostText('');
+      setImageUrl('');
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setShowImageInput(false);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Lỗi khi đăng bài:', error);
+      alert('Có lỗi xảy ra khi tải ảnh lên. Vui lòng thử lại.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -88,25 +122,50 @@ export function CreatePost() {
 
               {showImageInput && (
                 <div className="mb-4 animate-in slide-in-from-top-2 duration-200">
-                  <input
-                    type="text"
-                    className="w-full p-2 border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50/30 text-sm"
-                    placeholder="Dán link ảnh vào đây (ví dụ: https://...)"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    autoFocus={!postText}
-                  />
-                  {imageUrl && (
-                    <div className="mt-2 relative group">
-                      <img src={imageUrl} alt="Preview" className="max-h-40 w-full object-cover rounded-lg border shadow-sm" />
-                      <button 
-                        onClick={() => setImageUrl('')}
-                        className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                  <div className="space-y-3">
+                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-400 transition-colors bg-gray-50 group relative">
+                      {previewUrl ? (
+                        <div className="relative w-full">
+                          <img src={previewUrl} alt="Preview" className="max-h-[200px] w-full object-contain rounded-lg" />
+                          <button 
+                            onClick={() => {
+                              setSelectedFile(null);
+                              setPreviewUrl(null);
+                            }}
+                            className="absolute -top-2 -right-2 bg-gray-800 text-white p-1.5 rounded-full shadow-md hover:bg-gray-900 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center cursor-pointer w-full py-4">
+                          <div className="bg-gray-200 p-3 rounded-full group-hover:bg-blue-100 transition-colors">
+                            <Image className="w-8 h-8 text-gray-600 group-hover:text-blue-600" />
+                          </div>
+                          <span className="mt-2 text-sm font-semibold text-gray-700">Thêm ảnh</span>
+                          <span className="text-xs text-gray-500">hoặc kéo và thả</span>
+                          <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                        </label>
+                      )}
                     </div>
-                  )}
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div className="w-full border-t border-gray-200"></div>
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-gray-500">Hoặc dán URL</span>
+                      </div>
+                    </div>
+
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm"
+                      placeholder="Dán link ảnh vào đây..."
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -125,14 +184,14 @@ export function CreatePost() {
                 {/* Post Action */}
                 <button 
                   className={`w-full py-2 rounded-md font-semibold text-base transition-colors ${
-                    postText.trim().length > 0 
+                    (postText.trim().length > 0 || selectedFile || imageUrl) && !isUploading
                       ? 'bg-[#1b74e4] hover:bg-blue-600 text-white shadow-sm' 
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
-                  disabled={postText.trim().length === 0}
+                  disabled={(postText.trim().length === 0 && !selectedFile && !imageUrl) || isUploading}
                   onClick={handlePost}
                 >
-                  Đăng bài
+                  {isUploading ? 'Đang đăng...' : 'Đăng bài'}
                 </button>
               </div>
             </div>
