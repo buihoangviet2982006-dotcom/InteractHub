@@ -4,7 +4,8 @@ namespace Backend.Models;
 public class Story : Entity
 {
 
-    public string? MediaUrl { get; set; }
+    public byte[]? MediaData { get; set; }
+    public string? Content { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddHours(24);
 

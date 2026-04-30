@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import * as signalR from '@microsoft/signalr';
-import { getNotifications, markAsRead as markAsReadApi } from '../services/notificationApi';
+import { getNotifications, markAsRead as markAsReadApi, markAllAsRead as markAllAsReadApi } from '../services/notificationApi';
 import { useAuth } from './AuthContext';
 import type { Notification } from '../types';
 import { baseURL } from '../services/http';
@@ -10,16 +10,16 @@ interface NotificationContextValue {
   unreadCount: number;
   loading: boolean;
   markAsRead: (id: number) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
 
@@ -67,7 +67,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       newConnection.start()
         .then(() => {
           console.log('SignalR Connected');
-          setConnection(newConnection);
         })
         .catch(err => console.error('SignalR Connection Error: ', err));
 
@@ -80,7 +79,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       };
     } else {
       setNotifications([]);
-      setConnection(null);
     }
   }, [isAuthenticated, fetchNotifications]);
 
@@ -95,11 +93,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   };
 
+  const markAllAsRead = async () => {
+    try {
+      await markAllAsReadApi();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error('Failed to mark all notifications as read', error);
+    }
+  };
+
   const value = useMemo(() => ({
     notifications,
     unreadCount,
     loading,
     markAsRead,
+    markAllAsRead,
     refreshNotifications: fetchNotifications
   }), [notifications, unreadCount, loading, fetchNotifications]);
 

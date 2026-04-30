@@ -114,10 +114,10 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Story configuration
         modelBuilder.Entity<Story>(entity =>
         {
-            entity.Property(s => s.MediaUrl).IsRequired().HasMaxLength(500);
+            entity.Property(s => s.MediaData).HasColumnType("varbinary(max)");
+            entity.Property(s => s.Content).HasMaxLength(2000);
 
             entity.HasOne(s => s.User)
                 .WithMany(u => u.Stories)

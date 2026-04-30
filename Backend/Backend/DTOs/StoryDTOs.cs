@@ -5,7 +5,8 @@ namespace Backend.DTOs;
 public class StoryCreateDto
 {
 
-    public string? MediaUrl { get; set; }
+    public byte[]? MediaData { get; set; }
+    public string? Content { get; set; }
 }
 
 public class StoryResponseDto
@@ -14,7 +15,8 @@ public class StoryResponseDto
     public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
     public byte[]? UserAvatarData { get; set; }
-    public string? MediaUrl { get; set; }
+    public byte[]? MediaData { get; set; }
+    public string? Content { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
 }

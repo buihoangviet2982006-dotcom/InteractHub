@@ -15,3 +15,7 @@ export async function getNotifications(): Promise<Notification[]> {
 export async function markAsRead(id: number): Promise<void> {
   await http.put(`/notifications/${id}/read`);
 }
+
+export async function markAllAsRead(): Promise<void> {
+  await http.put('/notifications/read-all');
+}

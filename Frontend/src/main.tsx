@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext.tsx'
 import { FriendshipProvider } from './contexts/FriendshipContext.tsx'
 import { PostProvider } from './contexts/PostContext.tsx'
 import { NotificationProvider } from './contexts/NotificationContext.tsx'
+import { StoryProvider } from './contexts/StoryContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -14,9 +15,11 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <NotificationProvider>
           <FriendshipProvider>
-            <PostProvider>
-              <App />
-            </PostProvider>
+            <StoryProvider>
+              <PostProvider>
+                <App />
+              </PostProvider>
+            </StoryProvider>
           </FriendshipProvider>
         </NotificationProvider>
       </AuthProvider>

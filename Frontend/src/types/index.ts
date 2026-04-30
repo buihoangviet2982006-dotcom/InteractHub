@@ -55,3 +55,14 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface Story {
+  id: number;
+  userId: number;
+  userFullName: string;
+  userAvatarData?: string;
+  mediaData?: string;
+  content?: string;
+  createdAt: string;
+  expiresAt: string;
+}

@@ -66,4 +66,10 @@ public class NotificationService : INotificationService
         await _notificationRepo.SaveChangesAsync();
         return true;
     }
+
+    public async Task MarkAllAsReadAsync(int userId)
+    {
+        await _notificationRepo.MarkAllAsReadAsync(userId);
+        await _notificationRepo.SaveChangesAsync();
+    }
 }

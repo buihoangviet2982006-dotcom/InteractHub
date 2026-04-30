@@ -41,4 +41,15 @@ public class NotificationsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPut("read-all")]
+    public async Task<IActionResult> MarkAllAsRead()
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
+        await _notificationService.MarkAllAsReadAsync(userId);
+        return NoContent();
+    }
 }

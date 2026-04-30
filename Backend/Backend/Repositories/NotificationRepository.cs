@@ -23,4 +23,13 @@ public class NotificationRepository : Repository<Notification>, INotificationRep
     {
         return await _dbSet.FirstOrDefaultAsync(n => n.Id == id);
     }
+    
+    public async Task MarkAllAsReadAsync(int userId)
+    {
+        var notifications = await _dbSet.Where(n => n.UserId == userId && !n.IsRead).ToListAsync();
+        foreach (var n in notifications)
+        {
+            n.IsRead = true;
+        }
+    }
 }

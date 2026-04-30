@@ -23,7 +23,8 @@ public class StoryService : IStoryService
         var story = new Story
         {
             UserId = userId,
-            MediaUrl = dto.MediaUrl,
+            MediaData = dto.MediaData,
+            Content = dto.Content,
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddHours(24)
         };
@@ -37,7 +38,8 @@ public class StoryService : IStoryService
             UserId = story.UserId,
             UserFullName = user.FullName ?? string.Empty,
             UserAvatarData = user.AvatarData,
-            MediaUrl = story.MediaUrl,
+            MediaData = story.MediaData,
+            Content = story.Content,
             CreatedAt = story.CreatedAt,
             ExpiresAt = story.ExpiresAt
         };
@@ -52,7 +54,8 @@ public class StoryService : IStoryService
             UserId = s.UserId,
             UserFullName = s.User?.FullName ?? string.Empty,
             UserAvatarData = s.User?.AvatarData,
-            MediaUrl = s.MediaUrl,
+            MediaData = s.MediaData,
+            Content = s.Content,
             CreatedAt = s.CreatedAt,
             ExpiresAt = s.ExpiresAt
         }).ToList();

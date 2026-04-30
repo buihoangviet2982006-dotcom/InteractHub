@@ -8,7 +8,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 export function Navbar() {
   const { search, setSearch } = usePosts();
   const { logout, user } = useAuth();
-  const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -79,7 +79,15 @@ export function Navbar() {
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-[60]">
               <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h3 className="font-bold text-gray-900">Thông báo</h3>
-                <span className="text-xs text-blue-600 font-medium cursor-pointer hover:underline">Đánh dấu tất cả là đã đọc</span>
+                <span 
+                  className="text-xs text-blue-600 font-medium cursor-pointer hover:underline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    markAllAsRead();
+                  }}
+                >
+                  Đánh dấu tất cả là đã đọc
+                </span>
               </div>
               <div className="max-h-[400px] overflow-y-auto">
                 {notifications.length === 0 ? (
