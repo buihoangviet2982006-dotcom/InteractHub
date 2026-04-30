@@ -12,7 +12,7 @@ import { Camera, Image as ImageIcon } from 'lucide-react';
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { user: currentUser, setUser } = useAuth();
-  const { sendRequest, requestSent } = useFriendships();
+  const { sendRequest, acceptRequest, declineRequest, requestSent, pendingRequests } = useFriendships();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -93,7 +93,8 @@ export function ProfilePage() {
   }
 
   const isSelf = currentUser && (currentUser.id.toString() === userId || currentUser.id === Number(userId));
-  const isSent = requestSent.includes(profile.id);
+  const isSent = profile.requestSent || requestSent.includes(profile.id);
+  const incomingRequest = pendingRequests.find(r => r.friendId === profile.id);
 
   return (
     <div className="max-w-[800px] mx-auto bg-white min-h-screen">
@@ -153,6 +154,21 @@ export function ProfilePage() {
                 <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md">
                   Đã là bạn bè
                 </button>
+              ) : incomingRequest ? (
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => acceptRequest(profile.id)}
+                    className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
+                  >
+                    Chấp nhận
+                  </button>
+                  <button 
+                    onClick={() => declineRequest(profile.id)}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300"
+                  >
+                    Từ chối
+                  </button>
+                </div>
               ) : (
                 <button 
                   onClick={async () => {

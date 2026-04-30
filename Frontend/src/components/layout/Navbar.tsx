@@ -1,14 +1,29 @@
 import { Search, Bell, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { usePosts } from '../../contexts/PostContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 export function Navbar() {
   const { search, setSearch } = usePosts();
   const { logout, user } = useAuth();
+  const { notifications, unreadCount, markAsRead } = useNotifications();
   const navigate = useNavigate();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const displayName = user ? user.fullName : 'Khách';
   const displayAvatar = user ? user.avatarData : defaultAvatar;
@@ -47,9 +62,73 @@ export function Navbar() {
       </div>
 
       <div className="flex-shrink-0 flex items-center justify-end space-x-2 sm:space-x-3 w-1/4">
-        <button className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block">
-          <Bell className="h-6 w-6" />
-        </button>
+        <div className="relative" ref={dropdownRef}>
+          <button 
+            className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block relative"
+            onClick={() => setShowNotifications(!showNotifications)}
+          >
+            <Bell className="h-6 w-6" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-[#1877f2]">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-[60]">
+              <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 className="font-bold text-gray-900">Thông báo</h3>
+                <span className="text-xs text-blue-600 font-medium cursor-pointer hover:underline">Đánh dấu tất cả là đã đọc</span>
+              </div>
+              <div className="max-h-[400px] overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500">
+                    <p className="text-sm">Không có thông báo nào</p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-gray-50">
+                    {notifications.map((notif) => (
+                      <li 
+                        key={notif.id} 
+                        className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
+                        onClick={() => {
+                          if (!notif.isRead) markAsRead(notif.id);
+                          setShowNotifications(false);
+                        }}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className={`mt-1 p-2 rounded-full ${notif.type === 'Like' ? 'bg-blue-100 text-blue-600' : notif.type === 'Comment' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'}`}>
+                            <Bell className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                              {notif.content}
+                            </p>
+                            <p className="text-[11px] text-gray-500 mt-1">
+                              {new Date(notif.createdAt).toLocaleString('vi-VN', { 
+                                hour: '2-digit', 
+                                minute: '2-digit',
+                                day: '2-digit',
+                                month: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          {!notif.isRead && (
+                            <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="p-2 border-t border-gray-100 text-center bg-gray-50">
+                <button className="text-xs text-blue-600 font-bold hover:underline">Xem tất cả</button>
+              </div>
+            </div>
+          )}
+        </div>
         <button className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block">
           <MessageCircle className="h-6 w-6" />
         </button>

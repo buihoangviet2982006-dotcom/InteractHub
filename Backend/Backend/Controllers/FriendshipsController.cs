@@ -50,4 +50,41 @@ public class FriendshipsController : ControllerBase
         var friends = await _friendshipService.GetFriendsAsync(userId);
         return Ok(friends);
     }
+
+    [HttpGet("pending")]
+    public async Task<IActionResult> GetPendingRequests()
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
+        var requests = await _friendshipService.GetPendingRequestsAsync(userId);
+        return Ok(requests);
+    }
+
+    [HttpPost("accept/{requestorId}")]
+    public async Task<IActionResult> AcceptRequest(int requestorId)
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
+        var success = await _friendshipService.AcceptFriendRequestAsync(userId, requestorId);
+        if (!success) return BadRequest("Unable to accept friend request.");
+
+        return Ok("Friend request accepted.");
+    }
+
+    [HttpPost("decline/{requestorId}")]
+    public async Task<IActionResult> DeclineRequest(int requestorId)
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
+        var success = await _friendshipService.DeclineFriendRequestAsync(userId, requestorId);
+        if (!success) return BadRequest("Unable to decline friend request.");
+
+        return Ok("Friend request declined.");
+    }
 }

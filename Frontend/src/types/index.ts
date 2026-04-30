@@ -30,6 +30,7 @@ export interface Friendship {
   friendId: string;
   friendName: string;
   friendAvatarData?: string;
+  status: string;
   createdAt: string;
 }
 
@@ -44,5 +45,13 @@ export interface PostReportResponse {
   reporterName: string;
   postId: number;
   reason: string;
+  createdAt: string;
+}
+
+export interface Notification {
+  id: number;
+  content: string;
+  type: string;
+  isRead: boolean;
   createdAt: string;
 }

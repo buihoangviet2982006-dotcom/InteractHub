@@ -1,4 +1,5 @@
 using Backend.DTOs;
+using Backend.Models;
 using Backend.Repositories;
 
 namespace Backend.Services;
@@ -48,10 +49,16 @@ public class UserService : IUserService
         var friends = await _friendshipRepository.GetFriendsByUserIdAsync(userId);
         
         bool isFriend = false;
+        bool requestSent = false;
+
         if (currentUserId.HasValue && currentUserId.Value != userId)
         {
             var friendship = await _friendshipRepository.GetFriendshipAsync(currentUserId.Value, userId);
-            isFriend = friendship != null;
+            if (friendship != null)
+            {
+                isFriend = friendship.Status == FriendshipStatus.Accepted;
+                requestSent = friendship.Status == FriendshipStatus.Pending && friendship.RequestorId == currentUserId.Value;
+            }
         }
 
         return new UserProfileDto
@@ -63,7 +70,7 @@ public class UserService : IUserService
             CoverData = user.CoverData,
             FriendCount = friends.Count,
             IsFriend = isFriend,
-            RequestSent = false
+            RequestSent = requestSent
         };
     }
 

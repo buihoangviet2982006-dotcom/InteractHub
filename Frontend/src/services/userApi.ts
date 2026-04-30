@@ -40,6 +40,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     email: data.email || data.Email,
     avatarData: formatImageData(data.avatarData || data.AvatarData),
     coverData: formatImageData(data.coverData || data.CoverData),
+    friendCount: data.friendCount ?? data.FriendCount ?? 0,
+    isFriend: data.isFriend ?? data.IsFriend ?? false,
+    requestSent: data.requestSent ?? data.RequestSent ?? false,
   };
 }
 

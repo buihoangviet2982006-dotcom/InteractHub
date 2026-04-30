@@ -13,17 +13,22 @@ public interface IPostService
     Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto, byte[]? imageData);
     Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto, byte[]? imageData);
     Task<bool> DeletePostAsync(int id, int userId);
+    Task<bool> SharePostAsync(int id, int userId, int receiverId);
 }
 
 public class PostService : IPostService
 {
     private readonly IPostRepository _postRepo;
     private readonly IHashtagRepository _hashtagRepo;
+    private readonly INotificationService _notificationService;
+    private readonly IUserRepository _userRepo;
 
-    public PostService(IPostRepository postRepo, IHashtagRepository hashtagRepo)
+    public PostService(IPostRepository postRepo, IHashtagRepository hashtagRepo, INotificationService notificationService, IUserRepository userRepo)
     {
         _postRepo = postRepo;
         _hashtagRepo = hashtagRepo;
+        _notificationService = notificationService;
+        _userRepo = userRepo;
     }
 
     private static PostResponseDto MapToDto(Post p) => new()
@@ -136,6 +141,17 @@ public class PostService : IPostService
 
         _postRepo.Remove(post);
         await _postRepo.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> SharePostAsync(int id, int userId, int receiverId)
+    {
+        var post = await _postRepo.GetByIdAsync(id);
+        if (post == null) return false;
+
+        var user = await _userRepo.GetByIdAsync(userId);
+        await _notificationService.SendNotificationAsync(receiverId, "Share", $"{user?.FullName ?? "Một người dùng"} đã chia sẻ một bài viết với bạn.");
+        
         return true;
     }
 }

@@ -118,4 +118,17 @@ public class PostsController : ControllerBase
         
         return NoContent();
     }
+
+    [HttpPost("{id}/share/{receiverId}")]
+    public async Task<IActionResult> SharePost(int id, int receiverId)
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
+        var success = await _postService.SharePostAsync(id, userId, receiverId);
+        if (!success) return BadRequest("Không thể chia sẻ bài viết.");
+        
+        return Ok("Đã chia sẻ bài viết.");
+    }
 }

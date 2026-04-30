@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useFriendships } from '../../contexts/FriendshipContext';
 
 export function RightSidebar() {
-  const { friends, suggestions, requestSent, sendRequest, loading } = useFriendships();
+  const { friends, suggestions, pendingRequests, requestSent, sendRequest, acceptRequest, declineRequest, loading } = useFriendships();
   const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   const filteredSuggestions = suggestions.filter(
@@ -12,6 +12,37 @@ export function RightSidebar() {
   return (
     <aside className="w-[300px] h-[calc(100vh-56px)] overflow-y-auto sticky top-14 py-4 px-2 hidden lg:block bg-[#f0f2f5]">
       
+      {/* Pending Requests */}
+      {pendingRequests.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+          <h3 className="text-gray-900 font-semibold mb-3">Lời mời kết bạn</h3>
+          <ul className="space-y-4">
+            {pendingRequests.map((request) => (
+              <li key={request.friendId} className="space-y-2">
+                <div className="flex items-center space-x-3">
+                  <img src={request.friendAvatarData || defaultAvatar} alt={request.friendName} className="w-8 h-8 rounded-full object-cover" />
+                  <span className="font-medium text-gray-700 text-sm truncate">{request.friendName}</span>
+                </div>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => acceptRequest(request.friendId)}
+                    className="flex-1 bg-blue-600 text-white text-xs font-bold py-1.5 rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Chấp nhận
+                  </button>
+                  <button 
+                    onClick={() => declineRequest(request.friendId)}
+                    className="flex-1 bg-gray-200 text-gray-800 text-xs font-bold py-1.5 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Friends List */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
         <h3 className="text-gray-900 font-semibold mb-3">Bạn bè của bạn</h3>

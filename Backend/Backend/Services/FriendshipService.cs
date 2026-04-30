@@ -32,6 +32,7 @@ public class FriendshipService : IFriendshipService
         {
             RequestorId = requestorId,
             ReceiverId = dto.ReceiverId,
+            Status = FriendshipStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -70,7 +71,59 @@ public class FriendshipService : IFriendshipService
                 FriendId = friendUser.Id,
                 FriendName = friendUser.FullName ?? string.Empty,
                 FriendAvatarData = friendUser.AvatarData,
+                Status = f.Status.ToString(),
                 CreatedAt = f.CreatedAt
+            });
+        }
+
+        return response.OrderByDescending(r => r.CreatedAt).ToList();
+    }
+
+    public async Task<bool> AcceptFriendRequestAsync(int userId, int requestorId)
+    {
+        var friendship = await _friendshipRepo.GetFriendshipAsync(userId, requestorId);
+        if (friendship == null || friendship.ReceiverId != userId || friendship.Status != FriendshipStatus.Pending)
+            return false;
+
+        friendship.Status = FriendshipStatus.Accepted;
+        _friendshipRepo.Update(friendship);
+        await _friendshipRepo.SaveChangesAsync();
+
+        var receiver = await _userRepo.GetByIdAsync(userId);
+        await _notificationService.SendNotificationAsync(requestorId, "FriendAccepted", $"{receiver?.FullName ?? "Một người dùng"} đã chấp nhận lời mời kết bạn.");
+
+        return true;
+    }
+
+    public async Task<bool> DeclineFriendRequestAsync(int userId, int requestorId)
+    {
+        var friendship = await _friendshipRepo.GetFriendshipAsync(userId, requestorId);
+        if (friendship == null || friendship.ReceiverId != userId || friendship.Status != FriendshipStatus.Pending)
+            return false;
+
+        friendship.Status = FriendshipStatus.Declined;
+        _friendshipRepo.Update(friendship);
+        await _friendshipRepo.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<FriendshipResponseDto>> GetPendingRequestsAsync(int userId)
+    {
+        var requests = await _friendshipRepo.GetPendingRequestsByUserIdAsync(userId);
+        var response = new List<FriendshipResponseDto>();
+
+        foreach (var r in requests)
+        {
+            var requestor = r.Requestor;
+            if (requestor == null) continue;
+
+            response.Add(new FriendshipResponseDto
+            {
+                FriendId = requestor.Id,
+                FriendName = requestor.FullName ?? string.Empty,
+                FriendAvatarData = requestor.AvatarData,
+                Status = r.Status.ToString(),
+                CreatedAt = r.CreatedAt
             });
         }
 

@@ -2,16 +2,19 @@ import { createContext, useContext, useEffect, useMemo, useState, useCallback } 
 import type { ReactNode } from 'react';
 import type { Friendship, User } from '../types';
 import { useAuth } from './AuthContext';
-import { deleteFriendship, getFriends, sendFriendRequest } from '../services/friendshipsApi';
+import { deleteFriendship, getFriends, sendFriendRequest, getPendingRequests, acceptFriendRequest, declineFriendRequest } from '../services/friendshipsApi';
 import { getSuggestions } from '../services/userApi';
 
 interface FriendshipContextValue {
   friends: Friendship[];
   suggestions: User[];
+  pendingRequests: Friendship[];
   requestSent: string[];
   loading: boolean;
   error: string | null;
   sendRequest: (receiverId: string) => Promise<void>;
+  acceptRequest: (requestorId: string) => Promise<void>;
+  declineRequest: (requestorId: string) => Promise<void>;
   removeFriend: (targetUserId: string) => Promise<void>;
   refreshFriends: () => Promise<void>;
   loadSuggestions: () => Promise<void>;
@@ -23,6 +26,7 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const [friends, setFriends] = useState<Friendship[]>([]);
   const [suggestions, setSuggestions] = useState<User[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<Friendship[]>([]);
   const [requestSent, setRequestSent] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +40,12 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getFriends(user.id.toString());
-      setFriends(data);
+      const [friendsData, pendingData] = await Promise.all([
+        getFriends(user.id.toString()),
+        getPendingRequests()
+      ]);
+      setFriends(friendsData);
+      setPendingRequests(pendingData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể tải bạn bè');
     } finally {
@@ -66,6 +74,7 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
   const value = useMemo<FriendshipContextValue>(() => ({
     friends,
     suggestions,
+    pendingRequests,
     requestSent,
     loading,
     error,
@@ -73,12 +82,30 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
       try {
         await sendFriendRequest(receiverId);
         setRequestSent((prev) => [...prev, receiverId]);
-        // Also refresh friends or let backend decide. But for now, just mark request sent.
-        // If it's auto-accept, we can fetch friends again.
         void loadFriends();
-        void loadSuggestions(); // Refresh suggestions since they might have changed
+        void loadSuggestions();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Không thể gửi lời mời kết bạn');
+        throw err;
+      }
+    },
+    acceptRequest: async (requestorId: string) => {
+      try {
+        await acceptFriendRequest(requestorId);
+        void loadFriends();
+        void loadSuggestions();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Không thể chấp nhận kết bạn');
+        throw err;
+      }
+    },
+    declineRequest: async (requestorId: string) => {
+      try {
+        await declineFriendRequest(requestorId);
+        void loadFriends();
+        void loadSuggestions();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Không thể từ chối kết bạn');
         throw err;
       }
     },
@@ -88,7 +115,7 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
     },
     refreshFriends: loadFriends,
     loadSuggestions
-  }), [friends, suggestions, loading, error, requestSent, loadFriends, loadSuggestions]);
+  }), [friends, suggestions, pendingRequests, loading, error, requestSent, loadFriends, loadSuggestions]);
 
   return <FriendshipContext.Provider value={value}>{children}</FriendshipContext.Provider>;
 }

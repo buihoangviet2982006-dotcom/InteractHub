@@ -22,7 +22,17 @@ public class FriendshipRepository : Repository<Friendship>, IFriendshipRepositor
         return await _dbSet
             .Include(f => f.Requestor)
             .Include(f => f.Receiver)
-            .Where(f => f.RequestorId == userId || f.ReceiverId == userId)
+            .Where(f => (f.RequestorId == userId || f.ReceiverId == userId) && f.Status == FriendshipStatus.Accepted)
+            .AsSplitQuery()
+            .ToListAsync();
+    }
+
+    public async Task<List<Friendship>> GetPendingRequestsByUserIdAsync(int userId)
+    {
+        return await _dbSet
+            .Include(f => f.Requestor)
+            .Include(f => f.Receiver)
+            .Where(f => f.ReceiverId == userId && f.Status == FriendshipStatus.Pending)
             .AsSplitQuery()
             .ToListAsync();
     }

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Comment, Post } from '../types';
-import { createComment, createPost, deletePost as deletePostApi, fetchPosts, likePost, updatePost as updatePostApi, fetchComments } from '../services/postsApi';
+import { createComment, createPost, deletePost as deletePostApi, fetchPosts, likePost, updatePost as updatePostApi, fetchComments, sharePost as sharePostApi } from '../services/postsApi';
 import { reportApi } from '../services/reportApi';
 import { useAuth } from './AuthContext';
 
@@ -21,6 +21,7 @@ interface PostContextValue {
   addComment: (postId: string, content: string) => Promise<void>;
   loadComments: (postId: string) => Promise<void>;
   reportPost: (postId: number, reason: string) => Promise<void>;
+  sharePost: (postId: string, receiverId: string) => Promise<void>;
 }
 
 const PostContext = createContext<PostContextValue | undefined>(undefined);
@@ -250,6 +251,14 @@ export function PostProvider({ children }: { children: ReactNode }) {
           await reportApi.createReport({ postId, reason });
         } catch (err) {
           console.error('Lỗi khi báo cáo bài viết:', err);
+          throw err;
+        }
+      },
+      sharePost: async (postId: string, receiverId: string) => {
+        try {
+          await sharePostApi(postId, receiverId);
+        } catch (err) {
+          console.error('Lỗi khi chia sẻ bài viết:', err);
           throw err;
         }
       },

@@ -6,6 +6,7 @@ import { usePosts } from '../../contexts/PostContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { PostDetailModal } from './PostDetailModal';
 import { ReportPostModal } from './ReportPostModal';
+import { ShareModal } from './ShareModal';
 
 interface PostItemProps {
   post: Post;
@@ -16,6 +17,7 @@ export function PostItem({ post }: PostItemProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [editFile, setEditFile] = useState<File | null>(null);
   const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(post.imageData || null);
@@ -183,7 +185,10 @@ export function PostItem({ post }: PostItemProps) {
             <MessageSquare className="w-5 h-5" />
             <span>Bình luận</span>
           </button>
-          <button className="flex-1 flex items-center justify-center space-x-2 py-2 rounded-md hover:bg-gray-100 transition-colors text-gray-600 font-medium">
+          <button 
+            onClick={() => setShowShareModal(true)}
+            className="flex-1 flex items-center justify-center space-x-2 py-2 rounded-md hover:bg-gray-100 transition-colors text-gray-600 font-medium"
+          >
             <Share2 className="w-5 h-5" />
             <span>Chia sẻ</span>
           </button>
@@ -271,6 +276,13 @@ export function PostItem({ post }: PostItemProps) {
         <ReportPostModal
           postId={Number(post.id)}
           onClose={() => setShowReportModal(false)}
+        />
+      )}
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareModal
+          postId={post.id}
+          onClose={() => setShowShareModal(false)}
         />
       )}
     </>

@@ -113,6 +113,10 @@ export async function deletePost(postId: string): Promise<void> {
   await http.delete(`/posts/${postId}`);
 }
 
+export async function sharePost(postId: string, receiverId: string): Promise<void> {
+  await http.post(`/posts/${postId}/share/${receiverId}`);
+}
+
 export async function updatePost(postId: string, content: string, imageFile?: File): Promise<Post> {
   const formData = new FormData();
   formData.append('content', content);
