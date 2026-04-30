@@ -9,6 +9,8 @@ public interface IPostRepository : IRepository<Post>
     Task<List<Post>> GetPostsWithPaginationAsync(int limit, int? cursorId);
     Task<List<Post>> GetPostsByUserIdWithPaginationAsync(int userId, int limit, int? cursorId);
     Task<Post?> GetPostWithDetailsAsync(int id);
+    Task<Post?> GetPostWithHashtagsAsync(int id);
+    Task<List<Post>> SearchPostsAsync(string query, int limit = 20);
 }
 
 public class PostRepository : Repository<Post>, IPostRepository
@@ -65,5 +67,27 @@ public class PostRepository : Repository<Post>, IPostRepository
             .Include(p => p.Hashtags)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<Post?> GetPostWithHashtagsAsync(int id)
+    {
+        return await _dbSet
+            .Include(p => p.Hashtags)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<List<Post>> SearchPostsAsync(string query, int limit = 20)
+    {
+        var lowerQuery = query.ToLower();
+        return await _dbSet
+            .Include(p => p.User)
+            .Include(p => p.Likes)
+            .Include(p => p.Comments)
+            .Include(p => p.Hashtags)
+            .Where(p => p.Content!.ToLower().Contains(lowerQuery) || 
+                   p.Hashtags.Any(h => h.Name!.ToLower().Contains(lowerQuery)))
+            .OrderByDescending(p => p.CreatedAt)
+            .Take(limit)
+            .ToListAsync();
     }
 }

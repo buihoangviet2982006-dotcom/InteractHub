@@ -61,6 +61,26 @@ export function PostItem({ post }: PostItemProps) {
     }
   };
 
+  const renderContentWithHashtags = (content: string) => {
+    if (!content) return null;
+    const parts = content.split(/(#\w+)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('#')) {
+        return (
+          <Link
+            key={index}
+            to={`/search?q=${encodeURIComponent(part)}`}
+            className="text-blue-600 hover:underline font-bold"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </Link>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <>
       <div 
@@ -143,7 +163,7 @@ export function PostItem({ post }: PostItemProps) {
 
         {/* Post Content */}
         <div className="px-4 pb-2">
-          <p className="text-gray-800 text-base">{post.content}</p>
+          <p className="text-gray-800 text-base whitespace-pre-wrap">{renderContentWithHashtags(post.content)}</p>
         </div>
 
         {/* Post Image */}

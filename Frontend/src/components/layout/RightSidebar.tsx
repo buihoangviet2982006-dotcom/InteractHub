@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useFriendships } from '../../contexts/FriendshipContext';
+import { useState, useEffect } from 'react';
+import { hashtagsApi, type TrendingHashtag } from '../../services/hashtagsApi';
+import { TrendingUp } from 'lucide-react';
 
 export function RightSidebar() {
   const { friends, suggestions, pendingRequests, requestSent, sendRequest, acceptRequest, declineRequest, loading } = useFriendships();
@@ -9,9 +12,52 @@ export function RightSidebar() {
     (suggestion) => !friends.some((friend) => friend.friendId === suggestion.id),
   );
 
+  const [trendingHashtags, setTrendingHashtags] = useState<TrendingHashtag[]>([]);
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const data = await hashtagsApi.getTrending(5);
+        setTrendingHashtags(data);
+      } catch (error) {
+        console.error('Failed to fetch trending hashtags:', error);
+      }
+    };
+    fetchTrending();
+  }, []);
+
   return (
     <aside className="w-[300px] h-[calc(100vh-56px)] overflow-y-auto sticky top-14 py-4 px-2 hidden lg:block bg-[#f0f2f5]">
       
+      {/* Trending Hashtags */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-gray-900 font-semibold">Xu hướng cho bạn</h3>
+          <Link to="/hashtags" className="text-blue-600 text-xs hover:underline">Xem tất cả</Link>
+        </div>
+        <div className="space-y-3">
+          {trendingHashtags.length === 0 ? (
+            <p className="text-gray-500 text-xs italic">Chưa có xu hướng mới</p>
+          ) : (
+            trendingHashtags.map((tag) => (
+              <Link 
+                key={tag.id} 
+                to={`/search?q=${encodeURIComponent(tag.name)}`}
+                className="block group cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-blue-600 font-bold text-sm group-hover:underline">{tag.name}</span>
+                    <span className="text-gray-500 text-[11px]">{tag.postCount} bài viết</span>
+                  </div>
+                  <TrendingUp className="w-3 h-3 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+      </div>
+
       {/* Pending Requests */}
       {pendingRequests.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">

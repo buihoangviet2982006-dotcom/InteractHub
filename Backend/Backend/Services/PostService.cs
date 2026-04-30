@@ -14,6 +14,7 @@ public interface IPostService
     Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto, byte[]? imageData);
     Task<bool> DeletePostAsync(int id, int userId);
     Task<bool> SharePostAsync(int id, int userId, int receiverId);
+    Task<List<PostResponseDto>> SearchPostsAsync(string query);
 }
 
 public class PostService : IPostService
@@ -81,18 +82,13 @@ public class PostService : IPostService
         return p == null ? null : MapToDto(p);
     }
 
-    public async Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto, byte[]? imageData)
+    private async Task ProcessHashtagsAsync(Post post, string content)
     {
-        var post = new Post
-        {
-            UserId = userId,
-            Content = dto.Content,
-            ImageData = imageData,
-            CreatedAt = DateTime.Now
-        };
-
-        var hashtagMatches = Regex.Matches(dto.Content, @"#\w+");
+        var hashtagMatches = Regex.Matches(content, @"#\w+");
         var hashtagNames = hashtagMatches.Select(m => m.Value).Distinct().ToList();
+
+        // Xóa các hashtag cũ (cho trường hợp Update)
+        post.Hashtags.Clear();
 
         if (hashtagNames.Any())
         {
@@ -110,6 +106,19 @@ public class PostService : IPostService
                 }
             }
         }
+    }
+
+    public async Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto, byte[]? imageData)
+    {
+        var post = new Post
+        {
+            UserId = userId,
+            Content = dto.Content,
+            ImageData = imageData,
+            CreatedAt = DateTime.Now
+        };
+
+        await ProcessHashtagsAsync(post, dto.Content);
 
         await _postRepo.AddAsync(post);
         await _postRepo.SaveChangesAsync();
@@ -119,7 +128,7 @@ public class PostService : IPostService
 
     public async Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto, byte[]? imageData)
     {
-        var post = await _postRepo.GetByIdAsync(id);
+        var post = await _postRepo.GetPostWithHashtagsAsync(id);
         if (post == null) throw new Exception("Bài viết không tồn tại.");
         if (post.UserId != userId) throw new UnauthorizedAccessException("Không có quyền chỉnh sửa bài viết này.");
 
@@ -127,6 +136,8 @@ public class PostService : IPostService
         // Chỉ cập nhật ảnh nếu có file mới được gửi lên
         if (imageData != null)
             post.ImageData = imageData;
+
+        await ProcessHashtagsAsync(post, dto.Content);
 
         _postRepo.Update(post);
         await _postRepo.SaveChangesAsync();
@@ -153,5 +164,11 @@ public class PostService : IPostService
         await _notificationService.SendNotificationAsync(receiverId, "Share", $"{user?.FullName ?? "Một người dùng"} đã chia sẻ một bài viết với bạn.");
         
         return true;
+    }
+
+    public async Task<List<PostResponseDto>> SearchPostsAsync(string query)
+    {
+        var posts = await _postRepo.SearchPostsAsync(query);
+        return posts.Select(MapToDto).ToList();
     }
 }

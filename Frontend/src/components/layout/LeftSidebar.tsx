@@ -14,19 +14,46 @@ export function LeftSidebar() {
       <div className="bg-white rounded-lg shadow-sm p-4 h-full">
         <ul className="space-y-1 content-start">
           <li>
-            <NavLink to={user ? `/profile/${user.id}` : '#'} className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors">
+            <NavLink 
+              to={user ? `/profile/${user.id}` : '#'} 
+              className={({ isActive }) => 
+                `flex items-center space-x-3 p-3 rounded-md transition-all duration-200 font-medium ${
+                  isActive 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`
+              }
+            >
               <img src={displayAvatar || defaultAvatar} alt={displayName} className="w-8 h-8 rounded-full object-cover" />
-              <span className="font-medium text-gray-900">{displayName}</span>
+              <span className="font-medium">{displayName}</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/" className="flex items-center space-x-3 p-3 rounded-md bg-blue-50 text-blue-600 font-medium">
+            <NavLink 
+              to="/" 
+              className={({ isActive }) => 
+                `flex items-center space-x-3 p-3 rounded-md transition-all duration-200 font-medium ${
+                  isActive 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`
+              }
+            >
               <Users className="w-6 h-6" />
               <span>Bảng tin</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/hashtags" className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium">
+            <NavLink 
+              to="/hashtags" 
+              className={({ isActive }) => 
+                `flex items-center space-x-3 p-3 rounded-md transition-all duration-200 font-medium ${
+                  isActive 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`
+              }
+            >
               <MessageSquare className="w-6 h-6" />
               <span>Thẻ hashtag</span>
             </NavLink>

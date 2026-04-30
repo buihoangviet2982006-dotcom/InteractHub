@@ -64,7 +64,25 @@ export function PostDetailModal({ post, onClose }: PostDetailModalProps) {
           <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
             {/* Post content in detail */}
             <div className="p-4 text-gray-800 text-lg whitespace-pre-wrap">
-              {post.content}
+              {(() => {
+                if (!post.content) return null;
+                const parts = post.content.split(/(#\w+)/g);
+                return parts.map((part, index) => {
+                  if (part.startsWith('#')) {
+                    return (
+                      <Link
+                        key={index}
+                        to={`/search?q=${encodeURIComponent(part)}`}
+                        className="text-blue-600 hover:underline font-bold"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {part}
+                      </Link>
+                    );
+                  }
+                  return part;
+                });
+              })()}
             </div>
 
             {/* Stats */}
