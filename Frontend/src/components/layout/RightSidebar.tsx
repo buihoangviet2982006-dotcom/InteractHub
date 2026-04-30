@@ -91,7 +91,12 @@ export function RightSidebar() {
 
       {/* Friends List */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <h3 className="text-gray-900 font-semibold mb-3">Bạn bè của bạn</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-gray-900 font-semibold">Bạn bè của bạn</h3>
+          <Link to="/friends" className="text-blue-600 text-xs hover:underline">
+            Xem tất cả
+          </Link>
+        </div>
         {loading ? (
           <div className="text-gray-500 text-sm">Đang tải bạn bè...</div>
         ) : friends.length === 0 ? (

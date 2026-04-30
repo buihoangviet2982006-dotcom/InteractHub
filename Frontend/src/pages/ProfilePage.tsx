@@ -7,7 +7,7 @@ import { PostItem } from '../components/feed/PostItem';
 import { http } from '../services/http';
 import { mapBackendPostToFrontend } from '../services/postsApi';
 import type { Post } from '../types';
-import { Camera, Image as ImageIcon, MapPin, Briefcase, Calendar, Info } from 'lucide-react';
+import { Camera, Image as ImageIcon, Info } from 'lucide-react';
 import { EditProfileModal } from '../components/profile/EditProfileModal';
 
 export function ProfilePage() {
@@ -22,16 +22,18 @@ export function ProfilePage() {
   const [isUpdatingCover, setIsUpdatingCover] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
+  const profileId = userId === 'me' ? currentUser?.id?.toString() : userId;
+
   const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   useEffect(() => {
     async function fetchProfileData() {
-      if (!userId) return;
+      if (!profileId) return;
       setLoading(true);
       try {
         const [profileData, postsResponse] = await Promise.all([
-          getUserProfile(userId),
-          http.get<any>(`/posts/user/${userId}?limit=20`)
+          getUserProfile(profileId),
+          http.get<any>(`/posts/user/${profileId}?limit=20`)
         ]);
         setProfile(profileData);
 
@@ -44,20 +46,20 @@ export function ProfilePage() {
       }
     }
     void fetchProfileData();
-  }, [userId]);
+  }, [profileId]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !profile) return;
+    if (!file || !profile || !profileId) return;
 
     setIsUpdatingAvatar(true);
     try {
       await updateAvatar(file);
       // Refresh profile to get new binary data
-      const updatedProfile = await getUserProfile(userId!);
+      const updatedProfile = await getUserProfile(profileId);
       setProfile(updatedProfile);
 
-      if (currentUser && currentUser.id.toString() === userId) {
+      if (currentUser && (currentUser.id.toString() === userId || userId === 'me')) {
         setUser({ ...currentUser, avatarData: updatedProfile.avatarData });
       }
     } catch (error) {
@@ -70,13 +72,13 @@ export function ProfilePage() {
 
   const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !profile) return;
+    if (!file || !profile || !profileId) return;
 
     setIsUpdatingCover(true);
     try {
       await updateCover(file);
       // Refresh profile
-      const updatedProfile = await getUserProfile(userId!);
+      const updatedProfile = await getUserProfile(profileId);
       setProfile(updatedProfile);
     } catch (error) {
       console.error('Failed to update cover', error);
@@ -94,7 +96,7 @@ export function ProfilePage() {
     return <div className="max-w-[800px] mx-auto py-10 text-center text-gray-500">Người dùng không tồn tại.</div>;
   }
 
-  const isSelf = currentUser && (currentUser.id.toString() === userId || currentUser.id === Number(userId));
+  const isSelf = currentUser && (currentUser.id.toString() === userId || currentUser.id === Number(userId) || userId === 'me');
   const isFriend = profile.isFriend || friends.some(f => f.friendId === profile.id);
   const isSent = sentRequests.some(r => r.friendId === profile.id) || requestSent.includes(profile.id);
   const incomingRequest = pendingRequests.find(r => r.friendId === profile.id);
@@ -237,8 +239,8 @@ export function ProfilePage() {
           onClose={() => setShowEditProfileModal(false)}
           onUpdate={(updated) => {
             setProfile(updated);
-            if (currentUser && currentUser.id.toString() === userId) {
-              setUser({ ...currentUser, name: updated.name });
+            if (currentUser && (currentUser.id.toString() === userId || userId === 'me')) {
+              setUser({ ...currentUser, fullName: updated.name });
             }
           }}
         />

@@ -49,8 +49,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           skipNegotiation: true,
           transport: signalR.HttpTransportType.WebSockets
         })
+        .configureLogging(signalR.LogLevel.None)
         .withAutomaticReconnect()
         .build();
+
+      let isCancelled = false;
 
       newConnection.on('ReceiveNotification', (notification: Notification) => {
         setNotifications((prev) => [notification, ...prev]);
@@ -64,18 +67,31 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         }
       });
 
-      newConnection.start()
-        .then(() => {
-          console.log('SignalR Connected');
-        })
-        .catch(err => console.error('SignalR Connection Error: ', err));
+      const startConnection = async () => {
+        try {
+          await newConnection.start();
+          if (!isCancelled) {
+            console.log('SignalR Connected');
+          }
+        } catch (err) {
+          if (!isCancelled) {
+            const message = err instanceof Error ? err.message : String(err);
+            if (!message.includes('Failed to start the HttpConnection before stop() was called.')) {
+              console.error('SignalR Connection Error: ', err);
+            }
+          }
+        }
+      };
+
+      void startConnection();
 
       if (Notification.permission === 'default') {
         Notification.requestPermission();
       }
 
       return () => {
-        newConnection.stop();
+        isCancelled = true;
+        void newConnection.stop().catch(() => {});
       };
     } else {
       setNotifications([]);

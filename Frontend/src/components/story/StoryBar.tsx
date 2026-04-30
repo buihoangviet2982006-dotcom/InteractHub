@@ -29,7 +29,6 @@ export function StoryBar() {
           isCreate 
           onClick={() => setIsCreateModalOpen(true)} 
           avatarData={user?.avatarData} 
-          fullName={user?.fullName}
         />
 
         {/* Stories List */}

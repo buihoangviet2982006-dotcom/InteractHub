@@ -35,7 +35,7 @@ export function Navbar() {
         <div className="bg-white p-1 rounded-full w-9 h-9 flex items-center justify-center">
           <span className="text-[#1877f2] font-black text-xl">i</span>
         </div>
-        <h1 className="text-white text-xl font-bold tracking-tight hidden lg:block">InteractHub</h1>
+        <h1 className="text-white text-xl font-bold tracking-tight hidden lg:block">Social Media</h1>
       </div>
 
       {/* Search */}
@@ -137,6 +137,12 @@ export function Navbar() {
             </div>
           )}
         </div>
+        <button
+          className="text-white hover:bg-white/10 px-3 py-1 rounded-full transition-colors hidden sm:inline-flex items-center"
+          onClick={() => navigate('/friends')}
+        >
+          Bạn bè
+        </button>
         <button className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block">
           <MessageCircle className="h-6 w-6" />
         </button>
@@ -146,7 +152,10 @@ export function Navbar() {
           <button
             type="button"
             className="flex items-center space-x-2 focus:outline-none hover:bg-white/10 px-2 py-1 rounded-full transition-colors"
-            onClick={() => user && navigate(`/profile/${user.id}`)}
+            onClick={() => {
+              if (!user) return;
+              navigate(`/profile/${user.id ?? 'me'}`);
+            }}
           >
             <img
               className="h-8 w-8 rounded-full object-cover border border-white/20"

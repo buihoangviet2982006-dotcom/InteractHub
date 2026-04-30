@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Image, Upload } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import { useStories } from '../../contexts/StoryContext';
 
 interface CreateStoryModalProps {

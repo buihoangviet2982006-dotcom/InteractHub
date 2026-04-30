@@ -40,6 +40,12 @@ const SearchPage = lazy(() =>
   })),
 );
 
+const FriendsPage = lazy(() =>
+  import('./pages/FriendsPage').then((module) => ({
+    default: module.FriendsPage,
+  })),
+);
+
 function App() {
   return (
     <Suspense fallback={<div className="p-6 text-gray-600">Đang tải trang...</div>}>
@@ -51,6 +57,7 @@ function App() {
             <Route path="/" element={<FeedPage />} />
             <Route path="/hashtags" element={<HashtagPage />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route path="/friends" element={<FriendsPage />} />
             <Route path="/search" element={<SearchPage />} />
           </Route>
         </Route>

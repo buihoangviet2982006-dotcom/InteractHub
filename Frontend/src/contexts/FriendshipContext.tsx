@@ -29,7 +29,7 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
   const [suggestions, setSuggestions] = useState<User[]>([]);
   const [pendingRequests, setPendingRequests] = useState<Friendship[]>([]);
   const [sentRequests, setSentRequests] = useState<Friendship[]>([]);
-  const [requestSent, setRequestSent] = useState<string[]>([]);
+  const requestSent = useMemo(() => sentRequests.map((request) => request.friendId), [sentRequests]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,7 +86,6 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
     sendRequest: async (receiverId: string) => {
       try {
         await sendFriendRequest(receiverId);
-        setRequestSent((prev) => [...prev, receiverId]);
         void loadFriends();
         void loadSuggestions();
       } catch (err) {
@@ -120,7 +119,7 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
     },
     refreshFriends: loadFriends,
     loadSuggestions
-  }), [friends, suggestions, pendingRequests, loading, error, requestSent, loadFriends, loadSuggestions]);
+  }), [friends, suggestions, pendingRequests, sentRequests, requestSent, loading, error, loadFriends, loadSuggestions]);
 
   return <FriendshipContext.Provider value={value}>{children}</FriendshipContext.Provider>;
 }
