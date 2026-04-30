@@ -10,4 +10,5 @@ public interface IFriendshipService
     Task<bool> AcceptFriendRequestAsync(int userId, int requestorId);
     Task<bool> DeclineFriendRequestAsync(int userId, int requestorId);
     Task<List<FriendshipResponseDto>> GetPendingRequestsAsync(int userId);
+    Task<List<FriendshipResponseDto>> GetSentRequestsAsync(int userId);
 }

@@ -7,18 +7,20 @@ import { PostItem } from '../components/feed/PostItem';
 import { http } from '../services/http';
 import { mapBackendPostToFrontend } from '../services/postsApi';
 import type { Post } from '../types';
-import { Camera, Image as ImageIcon } from 'lucide-react';
+import { Camera, Image as ImageIcon, MapPin, Briefcase, Calendar, Info } from 'lucide-react';
+import { EditProfileModal } from '../components/profile/EditProfileModal';
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { user: currentUser, setUser } = useAuth();
-  const { sendRequest, acceptRequest, declineRequest, requestSent, pendingRequests } = useFriendships();
-  
+  const { friends, sendRequest, acceptRequest, declineRequest, requestSent, pendingRequests, sentRequests } = useFriendships();
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
   const [isUpdatingCover, setIsUpdatingCover] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
   const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
@@ -32,7 +34,7 @@ export function ProfilePage() {
           http.get<any>(`/posts/user/${userId}?limit=20`)
         ]);
         setProfile(profileData);
-        
+
         const rawItems = postsResponse.data.items || postsResponse.data.Items || [];
         setPosts(rawItems.map(mapBackendPostToFrontend));
       } catch (error) {
@@ -54,7 +56,7 @@ export function ProfilePage() {
       // Refresh profile to get new binary data
       const updatedProfile = await getUserProfile(userId!);
       setProfile(updatedProfile);
-      
+
       if (currentUser && currentUser.id.toString() === userId) {
         setUser({ ...currentUser, avatarData: updatedProfile.avatarData });
       }
@@ -93,13 +95,14 @@ export function ProfilePage() {
   }
 
   const isSelf = currentUser && (currentUser.id.toString() === userId || currentUser.id === Number(userId));
-  const isSent = profile.requestSent || requestSent.includes(profile.id);
+  const isFriend = profile.isFriend || friends.some(f => f.friendId === profile.id);
+  const isSent = sentRequests.some(r => r.friendId === profile.id) || requestSent.includes(profile.id);
   const incomingRequest = pendingRequests.find(r => r.friendId === profile.id);
 
   return (
     <div className="max-w-[800px] mx-auto bg-white min-h-screen">
       {/* Cover Photo Area */}
-      <div 
+      <div
         className="h-[300px] bg-gradient-to-r from-blue-300 to-blue-500 rounded-b-lg relative group"
         style={profile.coverData ? { backgroundImage: `url(${profile.coverData})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
       >
@@ -122,8 +125,8 @@ export function ProfilePage() {
         <div className="flex flex-col md:flex-row justify-between items-end md:items-center -mt-[50px] relative z-10 space-y-4 md:space-y-0">
           <div className="flex items-end space-x-6">
             <div className="relative group">
-              <img 
-                src={profile.avatarData || defaultAvatar} 
+              <img
+                src={profile.avatarData || defaultAvatar}
                 alt={profile.name}
                 className={`w-[160px] h-[160px] rounded-full border-4 border-white object-cover bg-white ${isUpdatingAvatar ? 'opacity-50' : ''}`}
               />
@@ -147,22 +150,22 @@ export function ProfilePage() {
               <p className="text-gray-500 font-medium mt-1">{profile.friendCount} bạn bè</p>
             </div>
           </div>
-          
+
           <div className="pb-4">
             {!isSelf && (
-              profile.isFriend ? (
+              isFriend ? (
                 <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md">
                   Đã là bạn bè
                 </button>
               ) : incomingRequest ? (
                 <div className="flex space-x-2">
-                  <button 
+                  <button
                     onClick={() => acceptRequest(profile.id)}
                     className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
                   >
                     Chấp nhận
                   </button>
-                  <button 
+                  <button
                     onClick={() => declineRequest(profile.id)}
                     className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300"
                   >
@@ -170,7 +173,7 @@ export function ProfilePage() {
                   </button>
                 </div>
               ) : (
-                <button 
+                <button
                   onClick={async () => {
                     if (!isSent) {
                       await sendRequest(profile.id);
@@ -184,7 +187,10 @@ export function ProfilePage() {
               )
             )}
             {isSelf && (
-              <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
+              <button
+                onClick={() => setShowEditProfileModal(true)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors"
+              >
                 Chỉnh sửa trang cá nhân
               </button>
             )}
@@ -197,15 +203,15 @@ export function ProfilePage() {
         <div className="max-w-[800px] mx-auto space-y-4">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="font-bold text-xl mb-4 text-gray-900 border-b pb-2">Giới thiệu</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600 text-[15px]">
-              <div className="flex items-center space-x-2">
-                <span className="font-semibold text-gray-800">Email:</span>
-                <span>{profile.email}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="font-semibold text-gray-800">Tham gia:</span>
-                <span>Thành viên mới</span>
-              </div>
+            <div className="space-y-4 text-gray-700">
+              {profile.bio ? (
+                <div className="flex items-start space-x-3">
+                  <Info className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <p className="text-[15px] italic">"{profile.bio}"</p>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-[15px] italic">Chưa có thông tin giới thiệu.</p>
+              )}
             </div>
           </div>
 
@@ -224,6 +230,19 @@ export function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {showEditProfileModal && (
+        <EditProfileModal
+          profile={profile}
+          onClose={() => setShowEditProfileModal(false)}
+          onUpdate={(updated) => {
+            setProfile(updated);
+            if (currentUser && currentUser.id.toString() === userId) {
+              setUser({ ...currentUser, name: updated.name });
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

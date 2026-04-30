@@ -34,6 +34,17 @@ export async function getPendingRequests(): Promise<Friendship[]> {
   }));
 }
 
+export async function getSentRequests(): Promise<Friendship[]> {
+  const response = await http.get<any[]>('/friendships/sent');
+  return response.data.map((f) => ({
+    friendId: (f.friendId || f.FriendId || '').toString(),
+    friendName: f.friendName || f.FriendName,
+    friendAvatarData: formatImageData(f.friendAvatarData || f.FriendAvatarData),
+    status: f.status || f.Status,
+    createdAt: f.createdAt || f.CreatedAt,
+  }));
+}
+
 export async function acceptFriendRequest(requestorId: string): Promise<void> {
   await http.post(`/friendships/accept/${requestorId}`);
 }

@@ -23,6 +23,7 @@ public class UserService : IUserService
             Id = u.Id,
             FullName = u.FullName!,
             Email = u.Email!,
+            Bio = u.Bio,
             AvatarData = u.AvatarData,
             CoverData = u.CoverData
         });
@@ -36,6 +37,7 @@ public class UserService : IUserService
             Id = u.Id,
             FullName = u.FullName!,
             Email = u.Email!,
+            Bio = u.Bio,
             AvatarData = u.AvatarData,
             CoverData = u.CoverData
         });
@@ -66,6 +68,7 @@ public class UserService : IUserService
             Id = user.Id,
             FullName = user.FullName!,
             Email = user.Email!,
+            Bio = user.Bio,
             AvatarData = user.AvatarData,
             CoverData = user.CoverData,
             FriendCount = friends.Count,
@@ -94,5 +97,19 @@ public class UserService : IUserService
             _userRepository.Update(user);
             await _userRepository.SaveChangesAsync();
         }
+    }
+
+    public async Task<UserProfileDto> UpdateProfileAsync(int userId, UserUpdateDto dto)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null) throw new Exception("User not found");
+
+        user.FullName = dto.FullName;
+        user.Bio = dto.Bio;
+
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync();
+
+        return await GetUserProfileAsync(userId, userId) ?? throw new Exception("Error reloading profile");
     }
 }

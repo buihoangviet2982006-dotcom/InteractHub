@@ -2,13 +2,14 @@ import { createContext, useContext, useEffect, useMemo, useState, useCallback } 
 import type { ReactNode } from 'react';
 import type { Friendship, User } from '../types';
 import { useAuth } from './AuthContext';
-import { deleteFriendship, getFriends, sendFriendRequest, getPendingRequests, acceptFriendRequest, declineFriendRequest } from '../services/friendshipsApi';
+import { deleteFriendship, getFriends, sendFriendRequest, getPendingRequests, getSentRequests, acceptFriendRequest, declineFriendRequest } from '../services/friendshipsApi';
 import { getSuggestions } from '../services/userApi';
 
 interface FriendshipContextValue {
   friends: Friendship[];
   suggestions: User[];
   pendingRequests: Friendship[];
+  sentRequests: Friendship[];
   requestSent: string[];
   loading: boolean;
   error: string | null;
@@ -27,6 +28,7 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
   const [friends, setFriends] = useState<Friendship[]>([]);
   const [suggestions, setSuggestions] = useState<User[]>([]);
   const [pendingRequests, setPendingRequests] = useState<Friendship[]>([]);
+  const [sentRequests, setSentRequests] = useState<Friendship[]>([]);
   const [requestSent, setRequestSent] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +42,14 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const [friendsData, pendingData] = await Promise.all([
+      const [friendsData, pendingData, sentData] = await Promise.all([
         getFriends(user.id.toString()),
-        getPendingRequests()
+        getPendingRequests(),
+        getSentRequests()
       ]);
       setFriends(friendsData);
       setPendingRequests(pendingData);
+      setSentRequests(sentData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể tải bạn bè');
     } finally {
@@ -75,6 +79,7 @@ export function FriendshipProvider({ children }: { children: ReactNode }) {
     friends,
     suggestions,
     pendingRequests,
+    sentRequests,
     requestSent,
     loading,
     error,

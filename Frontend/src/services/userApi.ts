@@ -5,6 +5,7 @@ import { formatImageData } from './postsApi';
 export interface UserProfile extends Omit<User, 'id'> {
   id: string;
   email?: string;
+  bio?: string;
   coverData?: string;
   friendCount: number;
   isFriend: boolean;
@@ -38,6 +39,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     id: (data.id || data.Id || '').toString(),
     name: data.fullName || data.FullName,
     email: data.email || data.Email,
+    bio: data.bio || data.Bio,
     avatarData: formatImageData(data.avatarData || data.AvatarData),
     coverData: formatImageData(data.coverData || data.CoverData),
     friendCount: data.friendCount ?? data.FriendCount ?? 0,
@@ -56,4 +58,21 @@ export async function updateCover(file: File): Promise<void> {
   const formData = new FormData();
   formData.append('file', file);
   await http.patch('/users/me/cover', formData);
+}
+
+export async function updateProfile(fullName: string, bio: string): Promise<UserProfile> {
+  const response = await http.patch<any>('/users/me/profile', { fullName, bio });
+  const data = response.data;
+  return {
+    ...data,
+    id: (data.id || data.Id || '').toString(),
+    name: data.fullName || data.FullName,
+    email: data.email || data.Email,
+    bio: data.bio || data.Bio,
+    avatarData: formatImageData(data.avatarData || data.AvatarData),
+    coverData: formatImageData(data.coverData || data.CoverData),
+    friendCount: data.friendCount ?? data.FriendCount ?? 0,
+    isFriend: data.isFriend ?? data.IsFriend ?? false,
+    requestSent: data.requestSent ?? data.RequestSent ?? false,
+  };
 }

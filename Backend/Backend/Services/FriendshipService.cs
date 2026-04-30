@@ -26,19 +26,32 @@ public class FriendshipService : IFriendshipService
         if (requestor == null || receiver == null) return false;
 
         var existing = await _friendshipRepo.GetFriendshipAsync(requestorId, dto.ReceiverId);
-        if (existing != null) return false;
-
-        var friendship = new Friendship
+        if (existing != null)
         {
-            RequestorId = requestorId,
-            ReceiverId = dto.ReceiverId,
-            Status = FriendshipStatus.Pending,
-            CreatedAt = DateTime.UtcNow
-        };
+            // Nếu đã là bạn bè hoặc đang chờ xác nhận thì không gửi lại
+            if (existing.Status == FriendshipStatus.Accepted || existing.Status == FriendshipStatus.Pending)
+                return false;
 
-        await _friendshipRepo.AddAsync(friendship);
+            // Nếu đã bị từ chối, ta cập nhật lại bản ghi này thành Pending
+            existing.RequestorId = requestorId;
+            existing.ReceiverId = dto.ReceiverId;
+            existing.Status = FriendshipStatus.Pending;
+            existing.CreatedAt = DateTime.UtcNow;
+            _friendshipRepo.Update(existing);
+        }
+        else
+        {
+            var friendship = new Friendship
+            {
+                RequestorId = requestorId,
+                ReceiverId = dto.ReceiverId,
+                Status = FriendshipStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _friendshipRepo.AddAsync(friendship);
+        }
+
         await _friendshipRepo.SaveChangesAsync();
-
         await _notificationService.SendNotificationAsync(dto.ReceiverId, "FriendRequest", $"{requestor.FullName ?? "Một người dùng"} đã gửi lời mời kết bạn.");
 
         return true;
@@ -122,6 +135,29 @@ public class FriendshipService : IFriendshipService
                 FriendId = requestor.Id,
                 FriendName = requestor.FullName ?? string.Empty,
                 FriendAvatarData = requestor.AvatarData,
+                Status = r.Status.ToString(),
+                CreatedAt = r.CreatedAt
+            });
+        }
+
+        return response.OrderByDescending(r => r.CreatedAt).ToList();
+    }
+
+    public async Task<List<FriendshipResponseDto>> GetSentRequestsAsync(int userId)
+    {
+        var requests = await _friendshipRepo.GetSentRequestsByUserIdAsync(userId);
+        var response = new List<FriendshipResponseDto>();
+
+        foreach (var r in requests)
+        {
+            var receiver = r.Receiver;
+            if (receiver == null) continue;
+
+            response.Add(new FriendshipResponseDto
+            {
+                FriendId = receiver.Id,
+                FriendName = receiver.FullName ?? string.Empty,
+                FriendAvatarData = receiver.AvatarData,
                 Status = r.Status.ToString(),
                 CreatedAt = r.CreatedAt
             });

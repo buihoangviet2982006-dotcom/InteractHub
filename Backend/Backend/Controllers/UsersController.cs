@@ -94,4 +94,15 @@ public class UsersController : ControllerBase
         await _userService.UpdateCoverAsync(currentUserId, coverData);
         return Ok(new { message = "Cover updated successfully" });
     }
+
+    [HttpPatch("me/profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDto dto)
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int currentUserId))
+            return Unauthorized();
+
+        var updatedProfile = await _userService.UpdateProfileAsync(currentUserId, dto);
+        return Ok(updatedProfile);
+    }
 }

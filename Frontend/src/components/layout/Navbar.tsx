@@ -12,7 +12,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function Navbar() {
 
       <div className="flex-shrink-0 flex items-center justify-end space-x-2 sm:space-x-3 w-1/4">
         <div className="relative" ref={dropdownRef}>
-          <button 
+          <button
             className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block relative"
             onClick={() => setShowNotifications(!showNotifications)}
           >
@@ -89,8 +89,8 @@ export function Navbar() {
                 ) : (
                   <ul className="divide-y divide-gray-50">
                     {notifications.map((notif) => (
-                      <li 
-                        key={notif.id} 
+                      <li
+                        key={notif.id}
                         className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
                         onClick={() => {
                           if (!notif.isRead) markAsRead(notif.id);
@@ -106,8 +106,8 @@ export function Navbar() {
                               {notif.content}
                             </p>
                             <p className="text-[11px] text-gray-500 mt-1">
-                              {new Date(notif.createdAt).toLocaleString('vi-VN', { 
-                                hour: '2-digit', 
+                              {new Date(notif.createdAt).toLocaleString('vi-VN', {
+                                hour: '2-digit',
                                 minute: '2-digit',
                                 day: '2-digit',
                                 month: '2-digit'
@@ -132,11 +132,11 @@ export function Navbar() {
         <button className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block">
           <MessageCircle className="h-6 w-6" />
         </button>
-        
+
         {/* User Info & Logout */}
         <div className="flex items-center space-x-2">
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="flex items-center space-x-2 focus:outline-none hover:bg-white/10 px-2 py-1 rounded-full transition-colors"
             onClick={() => user && navigate(`/profile/${user.id}`)}
           >
@@ -147,7 +147,7 @@ export function Navbar() {
             />
             <span className="text-white text-sm font-semibold hidden md:block">{displayName}</span>
           </button>
-          
+
           <button
             className="text-xs text-white border border-white/40 rounded-md px-2 py-1.5 hover:bg-white/20 font-medium transition-all"
             onClick={() => {

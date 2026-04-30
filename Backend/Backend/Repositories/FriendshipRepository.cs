@@ -36,4 +36,14 @@ public class FriendshipRepository : Repository<Friendship>, IFriendshipRepositor
             .AsSplitQuery()
             .ToListAsync();
     }
+
+    public async Task<List<Friendship>> GetSentRequestsByUserIdAsync(int userId)
+    {
+        return await _dbSet
+            .Include(f => f.Requestor)
+            .Include(f => f.Receiver)
+            .Where(f => f.RequestorId == userId && f.Status == FriendshipStatus.Pending)
+            .AsSplitQuery()
+            .ToListAsync();
+    }
 }

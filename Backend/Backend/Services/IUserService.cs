@@ -9,4 +9,5 @@ public interface IUserService
     Task<UserProfileDto?> GetUserProfileAsync(int userId, int? currentUserId = null);
     Task UpdateAvatarAsync(int userId, byte[] avatarData);
     Task UpdateCoverAsync(int userId, byte[] coverData);
+    Task<UserProfileDto> UpdateProfileAsync(int userId, UserUpdateDto dto);
 }

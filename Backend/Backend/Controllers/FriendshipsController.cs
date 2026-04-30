@@ -87,4 +87,15 @@ public class FriendshipsController : ControllerBase
 
         return Ok("Friend request declined.");
     }
+
+    [HttpGet("sent")]
+    public async Task<IActionResult> GetSentRequests()
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int userId))
+            return Unauthorized("Invalid token.");
+
+        var requests = await _friendshipService.GetSentRequestsAsync(userId);
+        return Ok(requests);
+    }
 }
