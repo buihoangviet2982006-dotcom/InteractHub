@@ -1,4 +1,4 @@
-import { Users, MessageSquare, Settings } from 'lucide-react';
+import { Users, MessageSquare } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -57,12 +57,6 @@ export function LeftSidebar() {
               <MessageSquare className="w-6 h-6" />
               <span>Thẻ hashtag</span>
             </NavLink>
-          </li>
-          <li>
-            <a href="#" className="flex items-center space-x-3 p-3 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium">
-              <Settings className="w-6 h-6" />
-              <span>Cài đặt</span>
-            </a>
           </li>
         </ul>
       </div>

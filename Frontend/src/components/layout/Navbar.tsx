@@ -11,14 +11,20 @@ export function Navbar() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRTRFNkVCIi8+PHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaTTEyIDE0QzkuMzMzMzMgMTQgNCAxNS4zMzMzIDQgMThWMjBIMjBWMThDMjAgMTUuMzMzMyAxNC42NjY3IDE0IDEyIDE0WiIgZmlsbD0iIzhBOEQ5MSIvPjwvc3ZnPg==';
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const clickedInNotifications = notificationsRef.current?.contains(event.target as Node);
+      const clickedInUserMenu = userMenuRef.current?.contains(event.target as Node);
+
+      if (!clickedInNotifications && !clickedInUserMenu) {
         setShowNotifications(false);
+        setShowUserMenu(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -62,10 +68,13 @@ export function Navbar() {
       </div>
 
       <div className="flex-shrink-0 flex items-center justify-end space-x-2 sm:space-x-3 w-1/4">
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative" ref={notificationsRef}>
           <button
             className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block relative"
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={() => {
+              setShowNotifications((prev) => !prev);
+              setShowUserMenu(false);
+            }}
           >
             <Bell className="h-6 w-6" />
             {unreadCount > 0 && (
@@ -147,14 +156,13 @@ export function Navbar() {
           <MessageCircle className="h-6 w-6" />
         </button>
 
-        {/* User Info & Logout */}
-        <div className="flex items-center space-x-2">
+        <div className="relative" ref={userMenuRef}>
           <button
             type="button"
-            className="flex items-center space-x-2 focus:outline-none hover:bg-white/10 px-2 py-1 rounded-full transition-colors"
+            className="flex items-center focus:outline-none hover:bg-white/10 p-2 rounded-full transition-colors"
             onClick={() => {
-              if (!user) return;
-              navigate(`/profile/${user.id ?? 'me'}`);
+              setShowUserMenu((prev) => !prev);
+              setShowNotifications(false);
             }}
           >
             <img
@@ -162,18 +170,49 @@ export function Navbar() {
               src={displayAvatar || defaultAvatar}
               alt={displayName}
             />
-            <span className="text-white text-sm font-semibold hidden md:block">{displayName}</span>
           </button>
 
-          <button
-            className="text-xs text-white border border-white/40 rounded-md px-2 py-1.5 hover:bg-white/20 font-medium transition-all"
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-          >
-            Đăng xuất
-          </button>
+          {showUserMenu && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden z-[60]">
+              <button
+                type="button"
+                className="flex items-center gap-3 w-full text-left px-4 py-4 border-b border-gray-100 hover:bg-gray-50"
+                onClick={() => {
+                  setShowUserMenu(false);
+                  if (user) navigate(`/profile/${user.id}`);
+                }}
+              >
+                <img
+                  className="h-12 w-12 rounded-full object-cover border border-gray-200"
+                  src={displayAvatar || defaultAvatar}
+                  alt={displayName}
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+                  <p className="text-xs text-gray-500">Trang cá nhân</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium transition-colors"
+                onClick={() => {
+                  setShowUserMenu(false);
+                }}
+              >
+                Cài đặt
+              </button>
+              <button
+                type="button"
+                className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium transition-colors border-t border-gray-100"
+                onClick={() => {
+                  logout();
+                  navigate('/login');
+                }}
+              >
+                Đăng xuất
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>
