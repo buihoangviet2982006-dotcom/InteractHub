@@ -46,6 +46,12 @@ const FriendsPage = lazy(() =>
   })),
 );
 
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage').then((module) => ({
+    default: module.SettingsPage,
+  })),
+);
+
 function App() {
   return (
     <Suspense fallback={<div className="p-6 text-gray-600">Đang tải trang...</div>}>
@@ -59,6 +65,7 @@ function App() {
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

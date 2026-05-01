@@ -104,6 +104,17 @@ public class UserService : IUserService
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null) throw new Exception("User not found");
 
+        // Check if email is being changed and if it's already in use
+        if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            var existingUser = await _userRepository.GetUserByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                throw new Exception("Email đã được sử dụng.");
+            }
+            user.Email = dto.Email;
+        }
+
         user.FullName = dto.FullName;
         user.Bio = dto.Bio;
 
@@ -111,5 +122,20 @@ public class UserService : IUserService
         await _userRepository.SaveChangesAsync();
 
         return await GetUserProfileAsync(userId, userId) ?? throw new Exception("Error reloading profile");
+    }
+
+    public async Task ChangePasswordAsync(int userId, ChangePasswordDto dto)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null) throw new Exception("User not found");
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash))
+        {
+            throw new Exception("Incorrect old password.");
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync();
     }
 }

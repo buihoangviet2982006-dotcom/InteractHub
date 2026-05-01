@@ -102,7 +102,32 @@ public class UsersController : ControllerBase
         if (!int.TryParse(userIdString, out int currentUserId))
             return Unauthorized();
 
-        var updatedProfile = await _userService.UpdateProfileAsync(currentUserId, dto);
-        return Ok(updatedProfile);
+        try
+        {
+            var updatedProfile = await _userService.UpdateProfileAsync(currentUserId, dto);
+            return Ok(updatedProfile);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("me/change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var userIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(userIdString, out int currentUserId))
+            return Unauthorized();
+
+        try
+        {
+            await _userService.ChangePasswordAsync(currentUserId, dto);
+            return Ok(new { message = "Password changed successfully" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

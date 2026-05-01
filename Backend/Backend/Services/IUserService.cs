@@ -10,4 +10,5 @@ public interface IUserService
     Task UpdateAvatarAsync(int userId, byte[] avatarData);
     Task UpdateCoverAsync(int userId, byte[] coverData);
     Task<UserProfileDto> UpdateProfileAsync(int userId, UserUpdateDto dto);
+    Task ChangePasswordAsync(int userId, ChangePasswordDto dto);
 }

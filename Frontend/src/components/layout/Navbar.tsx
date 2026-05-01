@@ -197,6 +197,7 @@ export function Navbar() {
                 className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium transition-colors"
                 onClick={() => {
                   setShowUserMenu(false);
+                  navigate('/settings');
                 }}
               >
                 Cài đặt
