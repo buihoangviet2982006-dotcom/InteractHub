@@ -155,6 +155,49 @@ Hệ thống quản trị mạnh mẽ giúp kiểm soát nội dung và người
 ![Admin Dashboard](./images/admin.png)
 
 
+---
+
+## 🧪 Kiểm thử phần mềm (Unit Testing)
+
+Hệ thống được đảm bảo chất lượng thông qua bộ unit test toàn diện cho tầng Service, sử dụng **xUnit** và **Moq**.
+
+### 📊 Kết quả kiểm thử
+- **Tổng số bài test**: 35 (Succeeded: 35, Failed: 0)
+- **Công nghệ**: xUnit, Moq, Coverlet
+- **Độ phủ mã nguồn (Code Coverage)**: **67.47%** cho toàn bộ logic tầng Service.
+
+| Chỉ số | Tỷ lệ phủ |
+| :--- | :--- |
+| **Line Coverage** | 67.47% |
+| **Branch Coverage** | 44.82% |
+| **Method Coverage** | 63.49% |
+
+### 🛠 Hướng dẫn chạy Test
+
+Để chạy toàn bộ các bài unit test và xem báo cáo độ phủ mã nguồn, bạn sử dụng các lệnh sau tại thư mục gốc của dự án:
+
+1. **Chạy tất cả các bài test**:
+   ```bash
+   dotnet test Backend.Tests/Backend.Tests.csproj
+   ```
+
+2. **Chạy test và xem báo cáo độ phủ (Code Coverage)**:
+   ```bash
+   dotnet test Backend.Tests/Backend.Tests.csproj /p:CollectCoverage=true /p:Include="[Backend]Backend.Services.*"
+   ```
+
+### 📋 Các Service đã được kiểm thử
+- **AuthService**: Đăng ký, đăng nhập, bảo mật JWT.
+- **UserService**: Quản lý hồ sơ, tìm kiếm, đổi mật khẩu.
+- **FriendshipService**: Gửi/nhận lời mời kết bạn, quản lý danh sách bạn bè.
+- **PostService**: Tạo/sửa/xóa bài viết, gắn hashtag.
+- **CommentService**: Bình luận bài viết và thông báo.
+- **LikeService**: Tương tác bài viết.
+- **NotificationService**: Thông báo thời gian thực.
+- **StoryService**: Quản lý khoảnh khắc 24h.
+
+---
+
 ## 📄 Giấy phép
 
 Dự án này được phát triển cho mục đích học tập và xây dựng cộng đồng.
