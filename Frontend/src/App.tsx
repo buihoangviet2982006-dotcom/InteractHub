@@ -59,6 +59,12 @@ const AdminReportsPage = lazy(() =>
   })),
 );
 
+const AdminPostsPage = lazy(() =>
+  import('./pages/AdminPostsPage').then((module) => ({
+    default: module.AdminPostsPage,
+  })),
+);
+
 function App() {
   return (
     <Suspense fallback={<div className="p-6 text-gray-600">Đang tải trang...</div>}>
@@ -77,6 +83,7 @@ function App() {
           
           <Route element={<AdminLayout />}>
             <Route path="/admin/reports" element={<AdminReportsPage />} />
+            <Route path="/admin/posts" element={<AdminPostsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

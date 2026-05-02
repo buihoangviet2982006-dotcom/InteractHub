@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Flag, LogOut, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { Flag, LogOut, LayoutDashboard, ShieldAlert, Layers } from 'lucide-react';
 
 export function AdminLayout() {
   const { logout, user } = useAuth();
@@ -40,6 +40,19 @@ export function AdminLayout() {
               >
                 <Flag size={18} />
                 Quản lý báo cáo
+              </NavLink>
+              <NavLink
+                to="/admin/posts"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm ${
+                    isActive
+                      ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/30'
+                      : 'hover:bg-white/5 hover:text-white'
+                  }`
+                }
+              >
+                <Layers size={18} />
+                Quản lý bài viết
               </NavLink>
             </nav>
           </div>
