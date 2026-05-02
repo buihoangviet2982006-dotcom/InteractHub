@@ -15,6 +15,7 @@ public class PostReportRepository : Repository<PostReport>, IPostReportRepositor
         var query = _dbSet
             .Include(r => r.Reporter)
             .Include(r => r.Post)
+            .ThenInclude(p => p!.User)
             .AsQueryable();
 
         if (cursorId.HasValue && cursorId > 0)

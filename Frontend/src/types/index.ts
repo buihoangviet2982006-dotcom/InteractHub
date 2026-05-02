@@ -46,6 +46,10 @@ export interface PostReportResponse {
   postId: number;
   reason: string;
   createdAt: string;
+  postContent: string;
+  postImageData?: string;
+  postAuthorName: string;
+  postAuthorAvatarData?: string;
 }
 
 export interface Notification {

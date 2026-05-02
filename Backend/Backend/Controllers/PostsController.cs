@@ -119,6 +119,20 @@ public class PostsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}/admin")]
+    public async Task<IActionResult> DeletePostAdmin(int id)
+    {
+        var adminIdString = User.FindFirst("UserId")?.Value;
+        if (!int.TryParse(adminIdString, out int adminId))
+            return Unauthorized("Invalid token.");
+
+        var success = await _postService.DeletePostAsAdminAsync(id, adminId);
+        if (!success) return BadRequest("Không thể xóa bài viết (có thể không tồn tại).");
+        
+        return NoContent();
+    }
+
     [HttpPost("{id}/share/{receiverId}")]
     public async Task<IActionResult> SharePost(int id, int receiverId)
     {

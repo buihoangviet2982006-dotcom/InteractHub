@@ -39,7 +39,7 @@ export function Navbar() {
       {/* Logo */}
       <div className="flex-shrink-0 flex items-center space-x-2 w-1/4 cursor-pointer" onClick={() => navigate('/')}>
         <div className="bg-white p-1 rounded-full w-9 h-9 flex items-center justify-center">
-          <span className="text-[#1877f2] font-black text-xl">i</span>
+          <span className="text-[#1877f2] font-black text-xl">S</span>
         </div>
         <h1 className="text-white text-xl font-bold tracking-tight hidden lg:block">Social Media</h1>
       </div>
@@ -88,7 +88,7 @@ export function Navbar() {
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-[60]">
               <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h3 className="font-bold text-gray-900">Thông báo</h3>
-                <span 
+                <span
                   className="text-xs text-blue-600 font-medium cursor-pointer hover:underline"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -152,9 +152,6 @@ export function Navbar() {
         >
           Bạn bè
         </button>
-        <button className="text-white hover:bg-white/10 p-2 rounded-full transition-colors hidden sm:block">
-          <MessageCircle className="h-6 w-6" />
-        </button>
 
         <div className="relative" ref={userMenuRef}>
           <button
@@ -202,6 +199,18 @@ export function Navbar() {
               >
                 Cài đặt
               </button>
+              {user?.role === 'Admin' && (
+                <button
+                  type="button"
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-red-600 font-medium transition-colors border-t border-gray-100"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    navigate('/admin/reports');
+                  }}
+                >
+                  Quản lý báo cáo
+                </button>
+              )}
               <button
                 type="button"
                 className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium transition-colors border-t border-gray-100"

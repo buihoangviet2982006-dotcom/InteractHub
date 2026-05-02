@@ -13,6 +13,7 @@ public interface IPostService
     Task<PostResponseDto> CreatePostAsync(int userId, PostCreateDto dto, byte[]? imageData);
     Task<PostResponseDto> UpdatePostAsync(int id, int userId, PostUpdateDto dto, byte[]? imageData);
     Task<bool> DeletePostAsync(int id, int userId);
+    Task<bool> DeletePostAsAdminAsync(int id, int adminId);
     Task<bool> SharePostAsync(int id, int userId, int receiverId);
     Task<List<PostResponseDto>> SearchPostsAsync(string query);
 }
@@ -149,6 +150,19 @@ public class PostService : IPostService
     {
         var post = await _postRepo.GetByIdAsync(id);
         if (post == null || post.UserId != userId) return false;
+
+        _postRepo.Remove(post);
+        await _postRepo.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeletePostAsAdminAsync(int id, int adminId)
+    {
+        var post = await _postRepo.GetByIdAsync(id);
+        if (post == null) return false;
+
+        // Send notification to the author
+        await _notificationService.SendNotificationAsync(post.UserId, "Warning", "Bài viết của bạn đã bị xóa do vi phạm quy định cộng đồng.");
 
         _postRepo.Remove(post);
         await _postRepo.SaveChangesAsync();

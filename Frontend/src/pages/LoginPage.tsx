@@ -16,8 +16,12 @@ export function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      await login(form);
-      navigate('/', { replace: true });
+      const loggedUser = await login(form);
+      if (loggedUser.role === 'Admin') {
+        navigate('/admin/reports', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Đăng nhập thất bại. Kiểm tra lại email/mật khẩu.');
     } finally {
@@ -30,9 +34,9 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-xl shadow-blue-500/30 mb-4 transform hover:scale-105 transition-transform">
-            <span className="text-3xl font-bold text-white">I</span>
+            <span className="text-3xl font-bold text-white">S</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">InteractHub</h1>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Social Media</h1>
           <p className="text-gray-500 mt-2">Đăng nhập để kết nối với thế giới của bạn</p>
         </div>
 

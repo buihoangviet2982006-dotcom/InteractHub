@@ -12,5 +12,9 @@ export const reportApi = {
       params: { limit, cursorId }
     });
     return response.data;
+  },
+
+  deleteReport: async (id: number): Promise<void> => {
+    await http.delete(`/PostReports/${id}`);
   }
 };

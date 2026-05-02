@@ -66,7 +66,11 @@ public class PostReportService : IPostReportService
             ReporterName = r.Reporter?.FullName ?? string.Empty,
             PostId = r.PostId,
             Reason = r.Reason ?? string.Empty,
-            CreatedAt = r.CreatedAt
+            CreatedAt = r.CreatedAt,
+            PostContent = r.Post?.Content ?? string.Empty,
+            PostImageData = r.Post?.ImageData,
+            PostAuthorName = r.Post?.User?.FullName ?? string.Empty,
+            PostAuthorAvatarData = r.Post?.User?.AvatarData
         }).ToList();
 
         return new CursorPagedResult<PostReportResponseDto>
@@ -75,5 +79,15 @@ public class PostReportService : IPostReportService
             HasNextPage = hasNextPage,
             NextCursorId = nextCursor
         };
+    }
+
+    public async Task<bool> DeleteReportAsync(int id)
+    {
+        var report = await _reportRepo.GetByIdAsync(id);
+        if (report == null) return false;
+
+        _reportRepo.Remove(report);
+        await _reportRepo.SaveChangesAsync();
+        return true;
     }
 }

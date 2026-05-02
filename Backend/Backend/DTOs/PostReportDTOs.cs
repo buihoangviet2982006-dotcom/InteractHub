@@ -21,4 +21,10 @@ public class PostReportResponseDto
     public int PostId { get; set; }
     public string Reason { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+
+    // Post Details for Admin UI
+    public string PostContent { get; set; } = string.Empty;
+    public byte[]? PostImageData { get; set; }
+    public string PostAuthorName { get; set; } = string.Empty;
+    public byte[]? PostAuthorAvatarData { get; set; }
 }

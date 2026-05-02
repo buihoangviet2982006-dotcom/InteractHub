@@ -113,6 +113,10 @@ export async function deletePost(postId: string): Promise<void> {
   await http.delete(`/posts/${postId}`);
 }
 
+export async function deletePostAsAdmin(postId: string | number): Promise<void> {
+  await http.delete(`/posts/${postId}/admin`);
+}
+
 export async function sharePost(postId: string, receiverId: string): Promise<void> {
   await http.post(`/posts/${postId}/share/${receiverId}`);
 }

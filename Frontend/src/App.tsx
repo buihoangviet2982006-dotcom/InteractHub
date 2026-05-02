@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { MainLayout } from './components/layout/MainLayout';
+import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
 import './index.css';
 
@@ -52,6 +53,12 @@ const SettingsPage = lazy(() =>
   })),
 );
 
+const AdminReportsPage = lazy(() =>
+  import('./pages/AdminReportsPage').then((module) => ({
+    default: module.AdminReportsPage,
+  })),
+);
+
 function App() {
   return (
     <Suspense fallback={<div className="p-6 text-gray-600">Đang tải trang...</div>}>
@@ -66,6 +73,10 @@ function App() {
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+          
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/reports" element={<AdminReportsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

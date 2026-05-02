@@ -43,4 +43,13 @@ public class PostReportsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteReport(int id)
+    {
+        var success = await _reportService.DeleteReportAsync(id);
+        if (!success) return NotFound("Report not found.");
+        return NoContent();
+    }
 }

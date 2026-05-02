@@ -7,7 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions.CommandTimeout(20)
+    )
+);
 
 builder.Services.AddControllers();
 
@@ -140,6 +144,44 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+// Seed Admin User
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    try
+    {
+        // context.Database.Migrate(); // Mở comment nếu muốn tự động chạy migration
+        
+        var adminSettings = config.GetSection("AdminSettings");
+        var adminEmail = adminSettings["Email"];
+        var adminPassword = adminSettings["Password"];
+        var adminFullName = adminSettings["FullName"];
+
+        if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPassword))
+        {
+            if (!context.Users.Any(u => u.Email == adminEmail))
+            {
+                var adminUser = new Backend.Models.User
+                {
+                    Email = adminEmail,
+                    FullName = adminFullName ?? "System Admin",
+                    Role = "Admin",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
+                    CreatedAt = DateTime.UtcNow
+                };
+                context.Users.Add(adminUser);
+                context.SaveChanges();
+                Console.WriteLine("Admin user seeded successfully from configuration.");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while seeding the database: {ex.Message}");
+    }
+}
 
 app.Run();
 

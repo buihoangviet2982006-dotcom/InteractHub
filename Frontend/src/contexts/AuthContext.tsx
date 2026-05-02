@@ -8,8 +8,8 @@ import { formatImageData } from '../services/postsApi';
 interface AuthContextValue {
   isAuthenticated: boolean;
   user: User | null;
-  login: (data: LoginDto) => Promise<void>;
-  register: (data: RegisterDto) => Promise<void>;
+  login: (data: LoginDto) => Promise<User>;
+  register: (data: RegisterDto) => Promise<User>;
   setUser: (user: User) => void;
   logout: () => void;
 }
@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(loggedUser));
         setUser(loggedUser);
         setIsAuthenticated(true);
+        return loggedUser;
       },
       register: async (data: RegisterDto) => {
         const res = await authApi.register(data);
@@ -83,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(loggedUser));
         setUser(loggedUser);
         setIsAuthenticated(true);
+        return loggedUser;
       },
       setUser: (userData: User) => {
         localStorage.setItem('user', JSON.stringify(userData));

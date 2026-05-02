@@ -39,15 +39,15 @@ export function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 shadow-xl shadow-teal-500/30 mb-4 transform hover:scale-105 transition-transform">
-            <span className="text-3xl font-bold text-white">I</span>
+            <span className="text-3xl font-bold text-white">S</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Tham gia InteractHub</h1>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Tham gia Social Media</h1>
           <p className="text-gray-500 mt-2">Bắt đầu kết nối với bạn bè trên khắp thế giới</p>
         </div>
 
         <div className="bg-white/70 backdrop-blur-xl shadow-2xl ring-1 ring-gray-900/5 rounded-3xl p-8">
           <form className="space-y-4" onSubmit={onSubmit}>
-            
+
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">Họ và Tên</label>
               <div className="relative">
