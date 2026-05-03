@@ -1,4 +1,4 @@
-import { Search, Bell, MessageCircle } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { usePosts } from '../../contexts/PostContext';

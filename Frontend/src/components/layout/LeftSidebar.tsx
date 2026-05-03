@@ -1,4 +1,4 @@
-import { Users, MessageSquare } from 'lucide-react';
+import { Users, MessageSquare, Home } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -39,8 +39,23 @@ export function LeftSidebar() {
                 }`
               }
             >
-              <Users className="w-6 h-6" />
+              <Home className="w-6 h-6" />
               <span>Bảng tin</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink 
+              to="/friends" 
+              className={({ isActive }) => 
+                `flex items-center space-x-3 p-3 rounded-md transition-all duration-200 font-medium ${
+                  isActive 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`
+              }
+            >
+              <Users className="w-6 h-6" />
+              <span>Bạn bè</span>
             </NavLink>
           </li>
           <li>
